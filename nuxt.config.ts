@@ -11,6 +11,11 @@ export default defineNuxtConfig({
   ui: {
     colorMode: false,
     fonts: false,
+  },
+  vite: {
+    server: {
+      allowedHosts: ['app.niebieskie-aparaty.pl']
+    }
   }
 
 });
