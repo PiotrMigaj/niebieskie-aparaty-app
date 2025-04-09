@@ -1,9 +1,0 @@
-node_modules
-npm-debug.log
-.nuxt
-.output
-.git
-.gitignore
-.env
-README.md
-.vscode
