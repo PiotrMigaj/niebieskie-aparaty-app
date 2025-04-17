@@ -74,12 +74,16 @@ const handleImageError = (e: Event) => {
 };
 
 const fetchPlaceholderImageUrl = async () => {
-  if (!props.event.imagePlaceholderObjectKey) return;
+  if (!props.event.imagePlaceholderObjectKey) {
+    imageUrl.value = '/placeholder.png';
+    return;
+  };
   try {
     imageUrl.value = await $fetch("/api/createPresignedUrl", {
       method: "POST",
       body: { objectKey: props.event.imagePlaceholderObjectKey },
     });
+    console.log('image url value: '+ imageUrl.value)
   } catch (err) {
     console.log("Could not generate presigned URL for image placeholder");
   }
@@ -132,8 +136,5 @@ const formatCreatedAt = (dateStr: string) => {
   });
 };
 
-onMounted(async () => {
-  console.log(props.event)
-  await fetchPlaceholderImageUrl();
-});
+onMounted(fetchPlaceholderImageUrl);
 </script>
