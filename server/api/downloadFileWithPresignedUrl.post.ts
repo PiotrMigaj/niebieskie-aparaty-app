@@ -1,7 +1,7 @@
 export default defineEventHandler(async (event) => {
   await isUserAuthenticated(event);
   try {
-    const { fileId, dateOfLastDownload } = await readBody(event);
+    const { fileId } = await readBody(event);
     if (!fileId) {
       throw createError({
         statusCode: 400,
@@ -9,11 +9,10 @@ export default defineEventHandler(async (event) => {
       });
     }
     const presignedUrl: string = await generatePresignedUrlForFileId(fileId);
-    if (!dateOfLastDownload) {
-      const fileRepository: FileRepository =
-        FileRepositoryFactory.getInstance();
-      await fileRepository.updateDownloadDate(fileId);
-    }
+
+    const fileRepository: FileRepository = FileRepositoryFactory.getInstance();
+    await fileRepository.updateDownloadDate(fileId);
+
     return presignedUrl;
   } catch (err) {
     console.log("Error during download of file using presigned URL");

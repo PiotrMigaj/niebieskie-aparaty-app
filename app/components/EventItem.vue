@@ -104,7 +104,7 @@ const downloadFile = async (file: FileDto) => {
   try {
     const presignedUrl = await $fetch("/api/downloadFileWithPresignedUrl", {
       method: "POST",
-      body: { fileId: file.fileId, dateOfLastDownload: file.dateOfLastDownload },
+      body: { fileId: file.fileId },
     });
 
     // Update dateOfLastDownload reactively
