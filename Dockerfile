@@ -24,7 +24,7 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Create a non-root user and group
-# RUN groupadd -r appgroup && useradd -r -g appgroup appuser
+RUN addgroup -S appgroup && adduser -S -G appgroup appuser
 
 # Copy only the necessary files from the build stage
 COPY --from=builder /app/.output /app/.output
@@ -33,10 +33,10 @@ COPY --from=builder /app/.output /app/.output
 # VOLUME /app/.output/server/data
 
 # Set the appropriate permissions for the app directory
-# RUN chown -R appuser:appgroup /app  
+RUN chown -R appuser:appgroup /app  
 
 # Switch to the non-root user
-# USER appuser
+USER appuser
 
 # Expose the port
 EXPOSE 3333
