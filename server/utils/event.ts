@@ -10,6 +10,7 @@ export interface EventDto {
   title: string;
   username: string;
   files?: FileDto[];
+  galleryId: string | null;
 }
 
 export interface EventRepository {

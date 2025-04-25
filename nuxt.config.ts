@@ -1,3 +1,5 @@
+import Aura from "@primevue/themes/aura";
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: "2024-11-01",
@@ -6,10 +8,20 @@ export default defineNuxtConfig({
     compatibilityVersion: 4,
   },
 
-  modules: ["nuxt-auth-utils", "@nuxt/ui"],
-  css: ['~/assets/css/main.css'],
-  ui: {
-    colorMode: false,
-    fonts: false,
-  }
+  modules: ["nuxt-auth-utils", "@nuxtjs/tailwindcss", "@primevue/nuxt-module"],
+  primevue: {
+    options: {
+      ripple: true,
+      inputVariant: "filled",
+      theme: {
+        preset: Aura,
+        options: {
+          darkModeSelector: "none",
+        },
+      },
+    },
+    autoImport: true,
+  },
+
+  css: ["primeicons/primeicons.css"],
 });

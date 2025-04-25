@@ -1,12 +1,13 @@
 <template>
-  <UApp>
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
-  </UApp>
+  <Toast />
 </template>
 
 <script setup>
+import { useToast } from 'primevue/usetoast';
+const toast = useToast();
 useHead({
   title: 'Photo Gallery – Niebieskie Aparaty',
   meta: [

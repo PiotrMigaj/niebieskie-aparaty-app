@@ -12,7 +12,14 @@
 
       <!-- Content section - right side on larger screens -->
       <div class="flex-1">
-        <h2 class="text-xl font-semibold">{{ event.title }}</h2>
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <h2 class="text-xl font-semibold">{{ event.title }}</h2>
+          <NuxtLink v-if="event.galleryId" :to="`/gallery/${event.galleryId}`"
+            class="flex items-center gap-2 text-sm px-4 py-2 border border-gray-200 rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition duration-200 shadow-sm">
+            <UIcon name="i-heroicons-photo" class="text-gray-500" />
+            Przejdź do galerii
+          </NuxtLink>
+        </div>
         <div class="flex items-center mt-1 text-gray-500">
           <UIcon name="i-heroicons-calendar" class="mr-1" />
           <p class="text-sm">{{ formatDate(event.date) }}</p>
@@ -83,7 +90,7 @@ const fetchPlaceholderImageUrl = async () => {
       method: "POST",
       body: { objectKey: props.event.imagePlaceholderObjectKey },
     });
-    console.log('image url value: '+ imageUrl.value)
+    // console.log('image url value: '+ imageUrl.value)
   } catch (err) {
     console.log("Could not generate presigned URL for image placeholder");
   }
