@@ -7,9 +7,9 @@ export default defineNuxtConfig({
   },
 
   modules: ["nuxt-auth-utils", "@nuxt/ui"],
-  css: ['~/assets/css/main.css'],
+  css: ["~/assets/css/main.css"],
   ui: {
     colorMode: false,
     fonts: false,
-  }
+  },
 });

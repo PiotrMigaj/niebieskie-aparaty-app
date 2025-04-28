@@ -3,16 +3,31 @@
     <!-- Main content area with image on left, data on right -->
     <div class="flex flex-col md:flex-row gap-4">
       <!-- Image section - left side on larger screens, now larger and square -->
-      <div v-if="imageUrl" class="md:w-2/5 md:min-w-[240px]">
+      <div v-if="imageUrl" class="md:w-2/5 md:min-w-[240px] relative">
         <div class="aspect-square w-full h-auto relative overflow-hidden rounded-lg">
           <img :src="imageUrl" @error="handleImageError" :alt="event.title"
             class="w-full h-full object-cover absolute inset-0" />
         </div>
+        
+        <!-- Gallery button overlay on image for mobile -->
+        <NuxtLink v-if="event.galleryId" :to="`/gallery/${event.galleryId}`"
+          class="md:hidden absolute bottom-3 right-3 flex items-center gap-2 text-sm px-4 py-2 bg-white bg-opacity-90 rounded-lg text-gray-800 hover:bg-opacity-100 transition duration-200 shadow-md font-medium">
+          <UIcon name="i-heroicons-photo" class="text-gray-700" />
+          Galeria
+        </NuxtLink>
       </div>
 
       <!-- Content section - right side on larger screens -->
       <div class="flex-1">
-        <h2 class="text-xl font-semibold">{{ event.title }}</h2>
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <h2 class="text-xl font-semibold">{{ event.title }}</h2>
+          <!-- Gallery button more prominent for desktop -->
+          <NuxtLink v-if="event.galleryId" :to="`/gallery/${event.galleryId}`"
+            class="hidden md:flex items-center gap-2 text-sm px-4 py-2 bg-blue-100 border border-blue-200 rounded-lg text-blue-700 hover:bg-blue-200 transition duration-200 shadow-sm font-medium">
+            <UIcon name="i-heroicons-photo" class="text-blue-600" />
+            Przejdź do galerii
+          </NuxtLink>
+        </div>
         <div class="flex items-center mt-1 text-gray-500">
           <UIcon name="i-heroicons-calendar" class="mr-1" />
           <p class="text-sm">{{ formatDate(event.date) }}</p>
@@ -24,6 +39,13 @@
         </div>
       </div>
     </div>
+
+    <!-- Gallery button - full width on mobile when no image -->
+    <NuxtLink v-if="event.galleryId && !imageUrl" :to="`/gallery/${event.galleryId}`"
+      class="md:hidden mt-3 flex items-center justify-center gap-2 text-sm px-4 py-3 bg-blue-100 border border-blue-200 rounded-lg text-blue-700 hover:bg-blue-200 transition duration-200 shadow-sm font-medium w-full">
+      <UIcon name="i-heroicons-photo" class="text-blue-600" />
+      Przejdź do galerii
+    </NuxtLink>
 
     <!-- Files Section -->
     <div v-if="event.files && event.files.length > 0" class="mt-4">
@@ -83,7 +105,7 @@ const fetchPlaceholderImageUrl = async () => {
       method: "POST",
       body: { objectKey: props.event.imagePlaceholderObjectKey },
     });
-    console.log('image url value: '+ imageUrl.value)
+    // console.log('image url value: '+ imageUrl.value)
   } catch (err) {
     console.log("Could not generate presigned URL for image placeholder");
   }
@@ -100,7 +122,7 @@ const formatDate = (dateString: string) => {
 };
 
 const downloadFile = async (file: FileDto) => {
-  console.log(`Downloading file: ${file.fileId}`);
+  // console.log(`Downloading file: ${file.fileId}`);
   try {
     const presignedUrl = await $fetch("/api/downloadFileWithPresignedUrl", {
       method: "POST",
