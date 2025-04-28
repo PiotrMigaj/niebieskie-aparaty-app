@@ -57,7 +57,6 @@ const fetchEvents = async () => {
     });
 
     events.value = result;
-    console.log(events.value)
 };
 
 
