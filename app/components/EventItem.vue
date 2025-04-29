@@ -8,7 +8,7 @@
           <img :src="imageUrl" @error="handleImageError" :alt="event.title"
             class="w-full h-full object-cover absolute inset-0" />
         </div>
-        
+
         <!-- Gallery button overlay on image for mobile -->
         <NuxtLink v-if="event.galleryId" :to="`/gallery/${event.galleryId}`"
           class="md:hidden absolute bottom-3 right-3 flex items-center gap-2 text-sm px-4 py-2 bg-white bg-opacity-90 rounded-lg text-gray-800 hover:bg-opacity-100 transition duration-200 shadow-md font-medium">
@@ -23,10 +23,11 @@
           <h2 class="text-xl font-semibold">{{ event.title }}</h2>
           <!-- Gallery button more prominent for desktop -->
           <NuxtLink v-if="event.galleryId" :to="`/gallery/${event.galleryId}`"
-            class="hidden md:flex items-center gap-2 text-sm px-4 py-2 bg-blue-100 border border-blue-200 rounded-lg text-blue-700 hover:bg-blue-200 transition duration-200 shadow-sm font-medium">
-            <UIcon name="i-heroicons-photo" class="text-blue-600" />
+            class="hidden md:flex items-center gap-2 text-sm px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-200 transition duration-200 shadow-sm font-medium">
+            <UIcon name="i-heroicons-photo" class="text-gray-600" />
             Przejdź do galerii
           </NuxtLink>
+
         </div>
         <div class="flex items-center mt-1 text-gray-500">
           <UIcon name="i-heroicons-calendar" class="mr-1" />
@@ -42,11 +43,11 @@
 
     <!-- Gallery button - full width on mobile when no image -->
     <NuxtLink v-if="event.galleryId && !imageUrl" :to="`/gallery/${event.galleryId}`"
-      class="md:hidden mt-3 flex items-center justify-center gap-2 text-sm px-4 py-3 bg-blue-100 border border-blue-200 rounded-lg text-blue-700 hover:bg-blue-200 transition duration-200 shadow-sm font-medium w-full">
-      <UIcon name="i-heroicons-photo" class="text-blue-600" />
+      class="md:hidden mt-3 flex items-center justify-center gap-2 text-sm px-4 py-3 bg-gray-100 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-200 transition duration-200 shadow-sm font-medium w-full">
+      <UIcon name="i-heroicons-photo" class="text-gray-600" />
       Przejdź do galerii
     </NuxtLink>
-
+    
     <!-- Files Section -->
     <div v-if="event.files && event.files.length > 0" class="mt-4">
       <div class="flex items-center mb-2">
