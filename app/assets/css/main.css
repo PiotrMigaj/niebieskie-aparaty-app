@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Italiana&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 @import "tailwindcss";
 @import "@nuxt/ui";
 
@@ -7,9 +7,9 @@
   --font-sans: 'Montserrat', sans-serif;
   --font-serif: 'Italiana', serif;
 
-  --ui-primary: #a8a29e; /* light background */
-  --ui-secondary: #121212; /* dark text / bg alt */
-  --ui-muted: #f5f5f5; /* accent bg like cards */
+  --ui-primary: #a8a29e;
+  --ui-secondary: #121212;
+  --ui-muted: #f5f5f5;
   --ui-border: #ddd;
   --ui-text-muted: #989898;
 
@@ -21,4 +21,9 @@
 :root {
   --secondary-color: #121212;
   --accent-color: #f5f5f5;
+}
+
+/* Global utility class */
+.font-italiana {
+  font-family: var(--font-serif);
 }
