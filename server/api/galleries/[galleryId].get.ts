@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const galleryId = event.context.params?.galleryId;
-  console.log("Gallerry id: "+galleryId)
+
   if (!galleryId) {
     throw createError({
       statusCode: 400,
@@ -22,14 +22,10 @@ export default defineEventHandler(async (event) => {
   }
 
   const username = authUser.username;
-  const galleryRepository: GalleryRepository =
-    GalleryRepositoryFactory.getInstance();
+  const galleryRepository: GalleryRepository = GalleryRepositoryFactory.getInstance();
 
-  const gallery = await galleryRepository.getGalleryByIdAndUsername(
-    galleryId,
-    username
-  );
-
+  let gallery = await galleryRepository.getGalleryByIdAndUsername(galleryId, username);
+  // console.log(gallery)
   if (!gallery) {
     throw createError({
       statusCode: 404,
@@ -50,6 +46,8 @@ export default defineEventHandler(async (event) => {
   if (shouldRefresh) {
     console.log(`Regenerating signed URLs for galleryId: ${galleryId}`);
     await galleryRepository.regeneratePresignedUrl(galleryId, username);
+    // Re-fetch updated gallery with new URLs
+    gallery = await galleryRepository.getGalleryByIdAndUsername(galleryId, username);
   }
 
   return gallery;
