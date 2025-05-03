@@ -11,9 +11,14 @@
           Nie masz żadnych wydarzeń.
         </div>
         <div v-else>
-          <h1>Witaj {{ user.fullName }}, ponżiej lista Twoich wydarzeń:</h1>
+          <h1>Witaj {{ user.fullName }}, poniżej lista Twoich wydarzeń:</h1>
           <div>
-            <EventItem class="mt-5" v-for="event in events" :key="event.eventId" :event="event" />
+            <EventItem 
+              class="mt-5" 
+              v-for="event in events" 
+              :key="event.eventId" 
+              :event="event" 
+            />
           </div>
         </div>
       </div>
@@ -21,8 +26,8 @@
   </template>
   
   <script setup lang="ts">
-import { useEvents } from '~/composables/useEvents';
-
-  const { fullName: user } = useUsers()
-  const { events, error, isLoading } = useEvents()
+  import { useEvents } from '~/composables/useEvents';
+  
+  const user = useUsers();
+  const { events, error, isLoading } = useEvents();
   </script>

@@ -1,8 +1,7 @@
 import type { EventDto } from "~/types/EventDto";
-import type { AsyncData } from "nuxt/app";
 
 export const useEvents = () => {
-  const { data: events, error, pending } = useFetch<EventDto[]>("/api/events");
+  const { data: events, error, status } = useFetch<EventDto[]>("/api/events");
 
   const sortedEvents = computed(() => {
     if (!events.value) return [];
@@ -26,9 +25,12 @@ export const useEvents = () => {
     return sorted;
   });
 
+  // Compute loading state from status
+  const isLoading = computed(() => status.value === "pending");
+
   return {
     events: sortedEvents,
     error,
-    isLoading: pending,
+    isLoading,
   };
 };
