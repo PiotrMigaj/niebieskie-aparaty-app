@@ -27,7 +27,6 @@
             <UIcon name="i-heroicons-photo" class="text-gray-600" />
             Przejdź do galerii
           </NuxtLink>
-
         </div>
         <div class="flex items-center mt-1 text-gray-500">
           <UIcon name="i-heroicons-calendar" class="mr-1" />
@@ -47,7 +46,7 @@
       <UIcon name="i-heroicons-photo" class="text-gray-600" />
       Przejdź do galerii
     </NuxtLink>
-    
+
     <!-- Files Section -->
     <div v-if="event.files && event.files.length > 0" class="mt-4">
       <div class="flex items-center mb-2">
@@ -57,7 +56,7 @@
       <ul class="space-y-2">
         <li v-for="file in event.files" :key="file.fileId"
           class="flex items-center p-2 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
-          @click="downloadFile(file)">
+          @click="handleFileDownload(file)">
           <UIcon name="i-heroicons-document-text" class="mr-2" />
 
           <!-- File description + badge -->
@@ -81,83 +80,62 @@
 </template>
 
 <script setup lang="ts">
-import type { EventDto } from '~/types/EventDto';
-import type { FileDto } from '~/types/FileDto';
+import { useFiles } from '~/composables/useFiles';
+import type { EventDto } from '~/types/EventDto'
+import type { FileDto } from '~/types/FileDto'
 
 const props = defineProps<{
   event: EventDto
-}>();
+}>()
 
-const imageUrl = ref('');
-const toast = useToast()
+const imageUrl = ref('')
+const { getPresignedUrl } = useFiles()
 
 const handleImageError = (e: Event) => {
-  const target = e.target as HTMLImageElement;
-  target.src = '/placeholder.png';
-};
+  const target = e.target as HTMLImageElement
+  target.src = '/placeholder.png'
+}
 
 const fetchPlaceholderImageUrl = async () => {
   if (!props.event.imagePlaceholderObjectKey) {
-    imageUrl.value = '/placeholder.png';
-    return;
-  };
-  try {
-    imageUrl.value = await $fetch("/api/createPresignedUrl", {
-      method: "POST",
-      body: { objectKey: props.event.imagePlaceholderObjectKey },
-    });
-    // console.log('image url value: '+ imageUrl.value)
-  } catch (err) {
-    console.log("Could not generate presigned URL for image placeholder");
+    imageUrl.value = '/placeholder.png'
+    return
   }
-};
+
+  const url = await getPresignedUrl(props.event.imagePlaceholderObjectKey)
+  imageUrl.value = url || '/placeholder.png'
+}
 
 const formatDate = (dateString: string) => {
-  if (!dateString) return '';
-  const date = new Date(dateString);
+  if (!dateString) return ''
+  const date = new Date(dateString)
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
     day: 'numeric'
-  });
-};
+  })
+}
 
-const downloadFile = async (file: FileDto) => {
-  // console.log(`Downloading file: ${file.fileId}`);
-  try {
-    const presignedUrl = await $fetch("/api/downloadFileWithPresignedUrl", {
-      method: "POST",
-      body: { fileId: file.fileId },
-    });
+const { downloadFile } = useFiles()
 
-    // Update dateOfLastDownload reactively
-    const updatedDate = new Date().toISOString();
-    const fileToUpdate = props.event.files.find(f => f.fileId === file.fileId);
+const handleFileDownload = async (file: FileDto) => {
+  const downloadDate = await downloadFile(file)
+  if (downloadDate) {
+    const fileToUpdate = props.event.files.find(f => f.fileId === file.fileId)
     if (fileToUpdate) {
-      fileToUpdate.dateOfLastDownload = updatedDate;
+      fileToUpdate.dateOfLastDownload = downloadDate
     }
-
-    // Start download
-    const link = document.createElement("a");
-    link.href = presignedUrl;
-    link.download = `${file.fileId}.zip`; // Optional: force file name
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  } catch (err) {
-    console.log("Could not generate presigned URL for image placeholder");
-    toast.add({ title: 'Błąd pobierania', description: 'Obecnie nie można pobrać pliku.', color: 'error' })
   }
-};
+}
 
 const formatCreatedAt = (dateStr: string) => {
-  const date = new Date(dateStr);
+  const date = new Date(dateStr)
   return date.toLocaleDateString('pl-PL', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit'
-  });
-};
+  })
+}
 
-onMounted(fetchPlaceholderImageUrl);
+onMounted(fetchPlaceholderImageUrl)
 </script>
