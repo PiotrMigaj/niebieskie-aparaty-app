@@ -89,7 +89,7 @@ const props = defineProps<{
 }>()
 
 const imageUrl = ref('')
-const { getPresignedUrl } = useFiles()
+const { getPresignedUrl } = await useFiles()
 
 const handleImageError = (e: Event) => {
   const target = e.target as HTMLImageElement
@@ -116,7 +116,7 @@ const formatDate = (dateString: string) => {
   })
 }
 
-const { downloadFile } = useFiles()
+const { downloadFile } = await useFiles()
 
 const handleFileDownload = async (file: FileDto) => {
   const downloadDate = await downloadFile(file)

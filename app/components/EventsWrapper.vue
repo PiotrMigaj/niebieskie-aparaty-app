@@ -29,5 +29,5 @@
   import { useEvents } from '~/composables/useEvents';
   
   const user = useUsers();
-  const { events, error, isLoading } = useEvents();
+  const { events, error, isLoading } = await useEvents();
   </script>

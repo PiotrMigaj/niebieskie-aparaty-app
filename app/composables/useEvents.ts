@@ -1,7 +1,7 @@
 import type { EventDto } from "~/types/EventDto";
 
-export const useEvents = () => {
-  const { data: events, error, status } = useFetch<EventDto[]>("/api/events");
+export const useEvents = async () => {
+  const { data: events, error, status } = await useFetch<EventDto[]>("/api/events");
 
   const sortedEvents = computed(() => {
     if (!events.value) return [];
