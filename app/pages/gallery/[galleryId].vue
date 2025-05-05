@@ -54,8 +54,8 @@
           <div class="flex justify-center">
             <img
               v-if="images[selectedImage]"
-              :src="images[selectedImage].itemImageSrc"
-              :alt="images[selectedImage].alt"
+              :src="images[selectedImage]?.itemImageSrc"
+              :alt="images[selectedImage]?.alt"
               class="max-w-full max-h-[70vh] md:max-h-[85vh] object-contain"
             />
           </div>
