@@ -27,7 +27,6 @@
             <UIcon name="i-heroicons-photo" class="text-gray-600" />
             Przejdź do galerii
           </NuxtLink>
-
         </div>
         <div class="flex items-center mt-1 text-gray-500">
           <UIcon name="i-heroicons-calendar" class="mr-1" />
@@ -47,7 +46,7 @@
       <UIcon name="i-heroicons-photo" class="text-gray-600" />
       Przejdź do galerii
     </NuxtLink>
-    
+
     <!-- Files Section -->
     <div v-if="event.files && event.files.length > 0" class="mt-4">
       <div class="flex items-center mb-2">
@@ -88,8 +87,8 @@ const props = defineProps<{
   event: EventDto
 }>();
 
+const { downloadFile, getImageUrl } = useEvents();
 const imageUrl = ref('');
-const toast = useToast()
 
 const handleImageError = (e: Event) => {
   const target = e.target as HTMLImageElement;
@@ -97,19 +96,7 @@ const handleImageError = (e: Event) => {
 };
 
 const fetchPlaceholderImageUrl = async () => {
-  if (!props.event.imagePlaceholderObjectKey) {
-    imageUrl.value = '/placeholder.png';
-    return;
-  };
-  try {
-    imageUrl.value = await $fetch("/api/createPresignedUrl", {
-      method: "POST",
-      body: { objectKey: props.event.imagePlaceholderObjectKey },
-    });
-    // console.log('image url value: '+ imageUrl.value)
-  } catch (err) {
-    console.log("Could not generate presigned URL for image placeholder");
-  }
+  imageUrl.value = await getImageUrl(props.event.imagePlaceholderObjectKey);
 };
 
 const formatDate = (dateString: string) => {
@@ -120,34 +107,6 @@ const formatDate = (dateString: string) => {
     month: 'short',
     day: 'numeric'
   });
-};
-
-const downloadFile = async (file: FileDto) => {
-  // console.log(`Downloading file: ${file.fileId}`);
-  try {
-    const presignedUrl = await $fetch("/api/downloadFileWithPresignedUrl", {
-      method: "POST",
-      body: { fileId: file.fileId },
-    });
-
-    // Update dateOfLastDownload reactively
-    const updatedDate = new Date().toISOString();
-    const fileToUpdate = props.event.files.find(f => f.fileId === file.fileId);
-    if (fileToUpdate) {
-      fileToUpdate.dateOfLastDownload = updatedDate;
-    }
-
-    // Start download
-    const link = document.createElement("a");
-    link.href = presignedUrl;
-    link.download = `${file.fileId}.zip`; // Optional: force file name
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  } catch (err) {
-    console.log("Could not generate presigned URL for image placeholder");
-    toast.add({ title: 'Błąd pobierania', description: 'Obecnie nie można pobrać pliku.', color: 'error' })
-  }
 };
 
 const formatCreatedAt = (dateStr: string) => {

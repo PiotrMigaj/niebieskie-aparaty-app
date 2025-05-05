@@ -7,14 +7,13 @@
           NIEBIESKIE APARATY
         </NuxtLink>
 
-
         <!-- Desktop Links -->
         <div class="hidden lg:flex items-center gap-4">
           <NuxtLink to="/"
             class="uppercase text-[0.8rem] tracking-[1.5px] font-medium mx-3 py-2 relative hover:text-gray-700">
             Home
           </NuxtLink>
-          <button @click="logout"
+          <button @click="handleLogout"
             class="uppercase text-[0.8rem] tracking-[1.5px] font-medium mx-3 py-2 relative hover:text-gray-700">
             Logout
           </button>
@@ -36,7 +35,7 @@
           </NuxtLink>
         </li>
         <li class="border-b border-gray-100 last:border-0">
-          <button @click="logout" class="block py-3 uppercase text-[0.8rem] tracking-[1.5px] font-medium">
+          <button @click="handleLogout" class="block py-3 uppercase text-[0.8rem] tracking-[1.5px] font-medium">
             Logout
           </button>
         </li>
@@ -46,12 +45,11 @@
 </template>
 
 <script setup>
-const { clear: clearSession } = useUserSession();
 const isMenuOpen = ref(false);
+const { logout } = useAuth();
 
-const logout = async () => {
-  await clearSession();
-  await navigateTo("/login");
+const handleLogout = async () => {
+  await logout();
 };
 
 // Auto-close mobile menu on route change

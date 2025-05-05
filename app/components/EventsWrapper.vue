@@ -21,56 +21,7 @@
 </template>
 
 <script setup lang="ts">
-
-import type { EventDto } from '~/types/EventDto';
-import type { UserDto } from '~/types/UserDto';
-
-const pending = ref<boolean>(true);
-const error = ref<any>(null);
-const fullName = ref<string>("");
-const events = ref<EventDto[]>([]);
-
-const fetchFullName = async () => {
-    const userDto = await $fetch('/api/fullName', {
-        method: 'GET',
-    }) as UserDto;
-    fullName.value = userDto.fullName;
-}
-
-const fetchEvents = async () => {
-    const result = await $fetch('/api/events', {
-        method: 'GET',
-    }) as EventDto[];
-
-    // Sort the events by date, then createdAt
-    result.sort((a, b) => {
-        const dateCompare = new Date(b.date).getTime() - new Date(a.date).getTime();
-        if (dateCompare !== 0) return dateCompare;
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    });
-
-    // Sort files inside each event
-    result.forEach(event => {
-        event.files.sort((a, b) => {
-            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        });
-    });
-
-    events.value = result;
-};
-
-
-const fetchData = async () => {
-    try {
-        await fetchFullName();
-        await fetchEvents();
-    } catch (err) {
-        console.error("Error fetching data from backend: " + err)
-        error.value = err;
-    } finally {
-        pending.value = false;
-    }
-};
+const { events, pending, error, fullName, fetchData } = useEvents();
 
 onMounted(fetchData);
 </script>

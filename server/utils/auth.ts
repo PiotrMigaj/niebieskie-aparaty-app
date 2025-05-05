@@ -22,7 +22,10 @@ export const isUserAuthenticated = async (
     const isUserAcive = await authService.isActiveByUsername(authUser.username);
     if (!isUserAcive) {
       console.error("User with username is not active: " + authUser.username);
-      throw Error("User is not active");
+      throw createError({
+        statusCode: 401,
+        message: "User is not active.",
+      });
     }
     return user as AuthUser;
   } catch (err) {

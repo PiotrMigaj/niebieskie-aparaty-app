@@ -37,7 +37,7 @@
       <div class="relative max-w-[90vw] max-h-[85vh]">
         <button
           class="absolute -top-12 right-0 text-white hover:text-gray-300 transition-colors"
-          @click="closeModal"
+          @click="closeImage"
         >
           <span class="text-3xl">×</span>
         </button>
@@ -94,59 +94,25 @@
 definePageMeta({
   middleware: ["authenticated"],
   layout: "gallery",
-})
+});
 
-const route = useRoute()
-const selectedImage = ref<number | null>(null)
-const images = ref<Array<any>>([])
-const loadedImages = ref<boolean[]>([])
-const masonryRef = ref()
-
-const openImage = (index: number) => {
-  selectedImage.value = index
-}
-
-const closeModal = () => {
-  selectedImage.value = null
-}
+const route = useRoute();
+const { 
+  images, 
+  loadedImages, 
+  selectedImage, 
+  fetchGallery, 
+  openImage, 
+  closeImage, 
+  handleKeydown 
+} = useGallery();
 
 onMounted(async () => {
-  try {
-    const galleryData = await $fetch(`/api/galleries/${route.params.galleryId}`)
+  await fetchGallery(route.params.galleryId as string);
+  window.addEventListener('keydown', handleKeydown);
+});
 
-    images.value = galleryData!!.images.map((img, index) => {
-      const aspectRatio = img.height && img.width ? (img.height / img.width) : 1
-      return {
-        ...img,
-        itemImageSrc: img.url,
-        thumbnailImageSrc: img.url,
-        alt: `Image ${index + 1}`,
-        aspectRatio
-      }
-    })
-
-    loadedImages.value = new Array(images.value.length).fill(false)
-  } catch (error) {
-    console.error('Error fetching gallery:', error)
-  }
-})
-
-onMounted(() => {
-  const handleKeydown = (e: KeyboardEvent) => {
-    if (selectedImage.value === null) return
-
-    if (e.key === 'Escape') {
-      closeModal()
-    } else if (e.key === 'ArrowLeft' && selectedImage.value > 0) {
-      selectedImage.value--
-    } else if (e.key === 'ArrowRight' && selectedImage.value < images.value.length - 1) {
-      selectedImage.value++
-    }
-  }
-
-  window.addEventListener('keydown', handleKeydown)
-  onUnmounted(() => {
-    window.removeEventListener('keydown', handleKeydown)
-  })
-})
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeydown);
+});
 </script>
