@@ -16,7 +16,8 @@
           <!-- Download button overlay -->
           <button @click.stop="downloadImage(item.itemImageSrc)"
             class="absolute top-4 right-4 bg-white/90 hover:bg-white w-10 h-10 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center">
-            <UIcon name="i-heroicons-arrow-down-tray" class="w-5 h-5 text-gray-700" />
+            <UIcon v-if="!isDownloading" name="i-heroicons-arrow-down-tray" class="w-5 h-5 text-gray-700" />
+            <UIcon v-else name="i-heroicons-arrow-path" class="w-5 h-5 text-gray-700 animate-spin" />
           </button>
         </div>
       </template>
@@ -34,7 +35,8 @@
         <!-- Download button - now outside image -->
         <button @click="downloadImage(images[selectedImage]?.itemImageSrc)"
           class="absolute -top-12 right-12 bg-white/90 hover:bg-white w-10 h-10 rounded-full shadow-lg transition-all duration-200 flex items-center justify-center">
-          <UIcon name="i-heroicons-arrow-down-tray" class="w-5 h-5 text-gray-700" />
+          <UIcon v-if="!isDownloading" name="i-heroicons-arrow-down-tray" class="w-5 h-5 text-gray-700" />
+          <UIcon v-else name="i-heroicons-arrow-path" class="w-5 h-5 text-gray-700 animate-spin" />
         </button>
 
         <div class="flex flex-col md:flex-row items-center">
@@ -60,11 +62,6 @@
             @click="selectedImage--">
             <span class="text-4xl">←</span>
           </button>
-          <!-- Mobile download button -->
-          <button @click="downloadImage(images[selectedImage]?.itemImageSrc)"
-            class="bg-white/90 hover:bg-white w-10 h-10 rounded-full shadow-lg transition-all duration-200 flex items-center justify-center">
-            <UIcon name="i-heroicons-arrow-down-tray" class="w-5 h-5 text-gray-700" />
-          </button>
           <button v-if="selectedImage < images.length - 1" class="text-white hover:text-gray-300 transition-colors"
             @click="selectedImage++">
             <span class="text-4xl">→</span>
@@ -86,6 +83,7 @@ const {
   images,
   loadedImages,
   selectedImage,
+  isDownloading,
   fetchGallery,
   openImage,
   closeImage,
