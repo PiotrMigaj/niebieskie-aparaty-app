@@ -12,6 +12,7 @@ export const useGallery = () => {
   const images = ref<GalleryImage[]>([]);
   const loadedImages = ref<boolean[]>([]);
   const selectedImage = ref<number | null>(null);
+  const toast = useToast();
 
   const fetchGallery = async (galleryId: string) => {
     try {
@@ -28,6 +29,39 @@ export const useGallery = () => {
       loadedImages.value = new Array(images.value.length).fill(false);
     } catch (error) {
       console.error("Error fetching gallery:", error);
+    }
+  };
+
+  const downloadImage = async (url: string | undefined) => {
+    if (!url) return;
+    try {
+      const response = await $fetch("/api/downloadImage", {
+        method: "POST",
+        body: { url },
+      });
+      const urlObj = new URL(url);
+      const pathname = urlObj.pathname;
+      const originalName = pathname.substring(pathname.lastIndexOf("/") + 1);
+      const baseName = originalName.replace(/\.[^/.]+$/, "");
+      const newFilename = `${baseName}.jpg`;
+      const link = document.createElement("a");
+      link.href = response;
+      link.download = newFilename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("Error downloading image:", error);
+      if (!toast.toasts.value.some((t) => t.id === "image-download-toast-id")) {
+        toast.add({
+          id: "image-download-toast-id",
+          title: "Błąd pobierania",
+          description: "Obecnie nie można pobrać zdjęcia.",
+          color: "error",
+          icon: "i-heroicons-exclamation-circle",
+          duration: 5000,
+        });
+      }
     }
   };
 
@@ -62,5 +96,6 @@ export const useGallery = () => {
     openImage,
     closeImage,
     handleKeydown,
+    downloadImage,
   };
 };

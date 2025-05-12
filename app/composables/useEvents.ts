@@ -7,6 +7,7 @@ export const useEvents = () => {
   const pending = ref<boolean>(true);
   const error = ref<any>(null);
   const fullName = ref<string>("");
+  const toast = useToast();
 
   const fetchFullName = async () => {
     const userDto = await $fetch("/api/fullName", {
@@ -16,9 +17,9 @@ export const useEvents = () => {
   };
 
   const fetchEvents = async () => {
-    const result = (await $fetch("/api/events", {
+    const result = (await $fetch<EventDto[]>("/api/events", {
       method: "GET",
-    })) as EventDto[];
+    }));
 
     // Sort the events by date, then createdAt
     result.sort((a, b) => {
@@ -53,7 +54,6 @@ export const useEvents = () => {
   };
 
   const downloadFile = async (file: FileDto) => {
-    const toast = useToast();
     try {
       const presignedUrl = await $fetch("/api/downloadFileWithPresignedUrl", {
         method: "POST",
@@ -99,10 +99,11 @@ export const useEvents = () => {
       return "/placeholder.png";
     }
     try {
-      return await $fetch("/api/createPresignedUrl", {
+      const url = await $fetch<string>("/api/createPresignedUrl", {
         method: "POST",
         body: { objectKey },
       });
+      return url;
     } catch (err) {
       console.error("Could not generate presigned URL for image placeholder");
       return "/placeholder.png";
