@@ -12,6 +12,7 @@ export const useGallery = () => {
   const images = ref<GalleryImage[]>([]);
   const loadedImages = ref<boolean[]>([]);
   const selectedImage = ref<number | null>(null);
+  const isDownloading = ref(false);
   const toast = useToast();
 
   const fetchGallery = async (galleryId: string) => {
@@ -34,6 +35,7 @@ export const useGallery = () => {
 
   const downloadImage = async (url: string | undefined) => {
     if (!url) return;
+    isDownloading.value = true;
     try {
       const response = await $fetch("/api/downloadImage", {
         method: "POST",
@@ -62,6 +64,8 @@ export const useGallery = () => {
           duration: 5000,
         });
       }
+    } finally {
+      isDownloading.value = false;
     }
   };
 
@@ -92,6 +96,7 @@ export const useGallery = () => {
     images,
     loadedImages,
     selectedImage,
+    isDownloading,
     fetchGallery,
     openImage,
     closeImage,

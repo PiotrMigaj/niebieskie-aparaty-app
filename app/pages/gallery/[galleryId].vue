@@ -15,7 +15,7 @@
           </div>
           <!-- Download button overlay -->
           <button @click.stop="downloadImage(item.itemImageSrc)"
-            class="absolute top-4 right-4 bg-white bg-opacity-90 p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-opacity-100">
+            class="absolute top-4 right-4 bg-white/90 hover:bg-white w-10 h-10 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center">
             <UIcon name="i-heroicons-arrow-down-tray" class="w-5 h-5 text-gray-700" />
           </button>
         </div>
@@ -26,8 +26,15 @@
     <div v-if="selectedImage !== null"
       class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
       <div class="relative max-w-[90vw] max-h-[85vh]">
+        <!-- Close button -->
         <button class="absolute -top-12 right-0 text-white hover:text-gray-300 transition-colors" @click="closeImage">
           <span class="text-3xl">×</span>
+        </button>
+
+        <!-- Download button - now outside image -->
+        <button @click="downloadImage(images[selectedImage]?.itemImageSrc)"
+          class="absolute -top-12 right-12 bg-white/90 hover:bg-white w-10 h-10 rounded-full shadow-lg transition-all duration-200 flex items-center justify-center">
+          <UIcon name="i-heroicons-arrow-down-tray" class="w-5 h-5 text-gray-700" />
         </button>
 
         <div class="flex flex-col md:flex-row items-center">
@@ -39,11 +46,6 @@
           <div class="relative flex justify-center">
             <img v-if="images[selectedImage]" :src="images[selectedImage]?.itemImageSrc"
               :alt="images[selectedImage]?.alt" class="max-w-full max-h-[70vh] md:max-h-[85vh] object-contain" />
-            <!-- Modal download button -->
-            <button @click="downloadImage(images[selectedImage]?.itemImageSrc)"
-              class="absolute top-4 right-4 bg-white bg-opacity-90 p-3 rounded-full shadow-lg hover:bg-opacity-100 transition-opacity duration-200">
-              <UIcon name="i-heroicons-arrow-down-tray" class="w-6 h-6 text-gray-700" />
-            </button>
           </div>
 
           <button v-if="selectedImage < images.length - 1"
@@ -52,10 +54,16 @@
           </button>
         </div>
 
-        <div class="flex justify-center space-x-12 mt-6 md:hidden">
+        <!-- Mobile navigation and download -->
+        <div class="flex justify-center items-center space-x-12 mt-6 md:hidden">
           <button v-if="selectedImage > 0" class="text-white hover:text-gray-300 transition-colors"
             @click="selectedImage--">
             <span class="text-4xl">←</span>
+          </button>
+          <!-- Mobile download button -->
+          <button @click="downloadImage(images[selectedImage]?.itemImageSrc)"
+            class="bg-white/90 hover:bg-white w-10 h-10 rounded-full shadow-lg transition-all duration-200 flex items-center justify-center">
+            <UIcon name="i-heroicons-arrow-down-tray" class="w-5 h-5 text-gray-700" />
           </button>
           <button v-if="selectedImage < images.length - 1" class="text-white hover:text-gray-300 transition-colors"
             @click="selectedImage++">
