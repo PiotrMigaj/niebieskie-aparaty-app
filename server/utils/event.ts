@@ -1,16 +1,5 @@
 import { ScanCommand } from "@aws-sdk/lib-dynamodb";
-import { FileDto } from "./file";
-
-export interface EventDto {
-  eventId: string;
-  createdAt: string;
-  date: string;
-  description: string;
-  imagePlaceholderObjectKey: string | null;
-  title: string;
-  username: string;
-  files?: FileDto[];
-}
+import type { EventDto } from "../../types/event.types";
 
 export interface EventRepository {
   getEventsByUsername(username: string): Promise<EventDto[]>;

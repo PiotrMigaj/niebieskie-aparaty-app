@@ -1,5 +1,5 @@
-import { EventRepository } from "../utils/event";
 import { UserRepository } from "../utils/user";
+import type { AuthUser } from "../../types/auth.types";
 
 export default defineEventHandler(async (event) => {
   const authUser: AuthUser | undefined = await isUserAuthenticated(event);

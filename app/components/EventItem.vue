@@ -80,8 +80,7 @@
 </template>
 
 <script setup lang="ts">
-import type { EventDto } from '~/types/EventDto';
-import type { FileDto } from '~/types/FileDto';
+import type { EventDto } from '../../types/event.types';
 
 const props = defineProps<{
   event: EventDto

@@ -1,15 +1,14 @@
 import { ref } from "vue";
+import type { GalleryImage, GalleryDto } from "../../types/gallery.types";
 
-interface GalleryImage {
+interface GalleryImageWithThumbnail extends GalleryImage {
   itemImageSrc: string;
   thumbnailImageSrc: string;
   alt: string;
-  width: number;
-  height: number;
 }
 
 export const useGallery = () => {
-  const images = ref<GalleryImage[]>([]);
+  const images = ref<GalleryImageWithThumbnail[]>([]);
   const loadedImages = ref<boolean[]>([]);
   const selectedImage = ref<number | null>(null);
   const isDownloading = ref(false);
@@ -17,15 +16,18 @@ export const useGallery = () => {
 
   const fetchGallery = async (galleryId: string) => {
     try {
-      const galleryData = await $fetch(`/api/galleries/${galleryId}`);
+      const galleryData = await $fetch<GalleryDto>(
+        `/api/galleries/${galleryId}`
+      );
 
-      images.value = galleryData!!.images.map((img: any, index: number) => ({
-        itemImageSrc: img.url,
-        thumbnailImageSrc: img.url,
-        alt: `Image ${index + 1}`,
-        width: img.width,
-        height: img.height,
-      }));
+      images.value = galleryData.images.map(
+        (img: GalleryImage, index: number) => ({
+          ...img,
+          itemImageSrc: img.url || "",
+          thumbnailImageSrc: img.url || "",
+          alt: `Image ${index + 1}`,
+        })
+      );
 
       loadedImages.value = new Array(images.value.length).fill(false);
     } catch (error) {

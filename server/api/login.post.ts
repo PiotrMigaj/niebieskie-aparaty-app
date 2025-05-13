@@ -1,10 +1,11 @@
-import { AuthServiceFactory, AuthUser } from "../utils/auth";
+import { AuthService } from "../utils/auth";
+import type { AuthUser } from "../../types/auth.types";
 
 export default defineEventHandler(async (event) => {
   const { credentials } = await readBody(event);
   const decodedCredentials = atob(credentials);
   const [username, password] = decodedCredentials.split(":");
-  const authService = AuthServiceFactory.getInstance();
+  const authService = AuthService.getInstance();
   const authUser: AuthUser | null = await authService.authenticate({
     username: username,
     password: password,

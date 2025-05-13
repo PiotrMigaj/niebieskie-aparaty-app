@@ -2,28 +2,9 @@ import { ScanCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { getS3Client } from "./s3";
+import type { GalleryDto } from "../../types/gallery.types";
 
-const BUCKET_NAME = 'niebieskie-aparaty-client-gallery';
-
-export interface GalleryImage {
-  key: string;
-  fileName: string;
-  contentType: string;
-  size: number;
-  width: number;
-  height: number;
-  url?: string;
-}
-
-export interface GalleryDto {
-  galleryId: string;
-  createdAt: string;
-  title: string;
-  description: string;
-  urlsSigningDate: string;
-  username: string;
-  images: GalleryImage[];
-}
+const BUCKET_NAME = "niebieskie-aparaty-client-gallery";
 
 export interface GalleryRepository {
   getGalleryByIdAndUsername(

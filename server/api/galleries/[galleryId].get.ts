@@ -1,5 +1,6 @@
 import { differenceInDays, parseISO } from "date-fns";
 import { GalleryRepository, GalleryRepositoryFactory } from "~~/server/utils/gallery";
+import type { AuthUser } from "../../../types/auth.types";
 
 export default defineEventHandler(async (event) => {
   const authUser: AuthUser | undefined = await isUserAuthenticated(event);

@@ -1,6 +1,6 @@
 import { ref } from "vue";
-import type { EventDto } from "~/types/EventDto";
-import type { FileDto } from "~/types/FileDto";
+import type { EventDto } from "../../types/event.types";
+import type { FileDto } from "../../types/file.types";
 
 export const useEvents = () => {
   const events = ref<EventDto[]>([]);

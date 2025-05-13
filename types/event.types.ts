@@ -1,4 +1,4 @@
-import type { FileDto } from "./FileDto";
+import type { FileDto } from "./file.types";
 
 export interface EventDto {
   eventId: string;

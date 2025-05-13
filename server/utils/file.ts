@@ -1,16 +1,5 @@
 import { GetCommand, ScanCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
-
-export interface FileDto {
-  fileId: string;
-  createdAt: string;
-  dateOfLastDownload: string | null;
-  description: string;
-}
-
-export interface FileWithObjectKeyDto {
-  fileId: string;
-  objectKey: string;
-}
+import type { FileDto, FileWithObjectKeyDto } from "../../types/file.types";
 
 export interface FileRepository {
   getFilesForUsernameAndEventId(

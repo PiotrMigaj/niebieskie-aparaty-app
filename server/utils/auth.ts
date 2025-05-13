@@ -2,15 +2,7 @@ import { getRequestURL, H3Event, sendRedirect, use } from "h3";
 import { GetCommand } from "@aws-sdk/lib-dynamodb";
 import { getDynamoClient } from "./db";
 import bcrypt from "bcrypt";
-
-export interface AuthUser {
-  username: string;
-}
-
-export interface AuthRequest {
-  username: string;
-  password: string;
-}
+import type { AuthUser, AuthRequest } from "../../types/auth.types";
 
 export const isUserAuthenticated = async (
   event: H3Event
@@ -18,7 +10,7 @@ export const isUserAuthenticated = async (
   try {
     const { user } = await requireUserSession(event);
     const authUser = user as AuthUser;
-    const authService: AuthService = AuthServiceFactory.getInstance();
+    const authService = AuthService.getInstance();
     const isUserAcive = await authService.isActiveByUsername(authUser.username);
     if (!isUserAcive) {
       console.error("User with username is not active: " + authUser.username);
@@ -36,7 +28,9 @@ export const isUserAuthenticated = async (
   }
 };
 
-class AuthService {
+export class AuthService {
+  private static instance: AuthService;
+
   private readonly docClient;
   private readonly tableName: string = "Users";
 
@@ -44,14 +38,11 @@ class AuthService {
     this.docClient = getDynamoClient();
   }
 
-  private isValidRequest(request: AuthRequest): boolean {
-    const { username, password } = request;
-    return (
-      typeof username === "string" &&
-      username.trim() !== "" &&
-      typeof password === "string" &&
-      password.trim() !== ""
-    );
+  public static getInstance(): AuthService {
+    if (!AuthService.instance) {
+      AuthService.instance = new AuthService();
+    }
+    return AuthService.instance;
   }
 
   public async authenticate(request: AuthRequest): Promise<AuthUser | null> {
@@ -110,15 +101,14 @@ class AuthService {
       return false;
     }
   }
-}
 
-let instance: AuthService;
-
-export class AuthServiceFactory {
-  static getInstance(): AuthService {
-    if (!instance) {
-      instance = new AuthService();
-    }
-    return instance;
+  private isValidRequest(request: AuthRequest): boolean {
+    const { username, password } = request;
+    return (
+      typeof username === "string" &&
+      username.trim() !== "" &&
+      typeof password === "string" &&
+      password.trim() !== ""
+    );
   }
 }
