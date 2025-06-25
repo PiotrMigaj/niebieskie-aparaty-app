@@ -1,4 +1,3 @@
-import { ref } from "vue";
 import type { EventDto } from "../../types/event.types";
 import type { FileDto } from "../../types/file.types";
 

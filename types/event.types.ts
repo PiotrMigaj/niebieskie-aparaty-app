@@ -10,4 +10,5 @@ export interface EventDto {
   username: string;
   files: FileDto[];
   galleryId: string | null;
+  camelGallery: string | null;
 }

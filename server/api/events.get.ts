@@ -1,4 +1,6 @@
 import type { AuthUser } from "../../types/auth.types";
+import type { EventDto } from "../../types/event.types";
+import type { FileDto } from "../../types/file.types";
 
 export default defineEventHandler(async (event) => {
   const authUser: AuthUser | undefined = await isUserAuthenticated(event);

@@ -1,32 +1,30 @@
-import type { GalleryImage, GalleryDto } from "../../types/gallery.types";
+import type { EventGallery } from "../../types/eventGallery.types";
 
-interface GalleryImageWithThumbnail extends GalleryImage {
+interface EventGalleryImageWithThumbnail extends EventGallery {
   itemImageSrc: string;
   thumbnailImageSrc: string;
   alt: string;
 }
 
-export const useGallery = () => {
-  const images = ref<GalleryImageWithThumbnail[]>([]);
+export const useEventGallery = () => {
+  const images = ref<EventGalleryImageWithThumbnail[]>([]);
   const loadedImages = ref<boolean[]>([]);
   const selectedImage = ref<number | null>(null);
   const isDownloading = ref(false);
   const toast = useToast();
 
-  const fetchGallery = async (galleryId: string) => {
+  const fetchGallery = async (eventId: string) => {
     try {
-      const galleryData = await $fetch<GalleryDto>(
-        `/api/galleries/${galleryId}`
+      const galleryData = await $fetch<EventGallery[]>(
+        `/api/events/${eventId}/gallery`
       );
 
-      images.value = galleryData.images.map(
-        (img: GalleryImage, index: number) => ({
-          ...img,
-          itemImageSrc: img.url || "",
-          thumbnailImageSrc: img.url || "",
-          alt: `Image ${index + 1}`,
-        })
-      );
+      images.value = galleryData.map((img: EventGallery, index: number) => ({
+        ...img,
+        itemImageSrc: img.compressedFilePresignedUrl || "",
+        thumbnailImageSrc: img.compressedFilePresignedUrl || "",
+        alt: `Image ${index + 1}`,
+      }));
 
       loadedImages.value = new Array(images.value.length).fill(false);
     } catch (error) {
@@ -36,20 +34,12 @@ export const useGallery = () => {
 
   const downloadImage = async (url: string | undefined) => {
     if (!url) return;
+
     isDownloading.value = true;
     try {
-      const response = await $fetch("/api/downloadImage", {
-        method: "POST",
-        body: { url },
-      });
-      const urlObj = new URL(url);
-      const pathname = urlObj.pathname;
-      const originalName = pathname.substring(pathname.lastIndexOf("/") + 1);
-      const baseName = originalName.replace(/\.[^/.]+$/, "");
-      const newFilename = `${baseName}.jpg`;
       const link = document.createElement("a");
-      link.href = response;
-      link.download = newFilename;
+      link.href = url;
+      link.download = ""; // Let browser use default filename from the URL or headers
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
