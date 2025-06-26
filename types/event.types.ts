@@ -11,4 +11,5 @@ export interface EventDto {
   files: FileDto[];
   galleryId: string | null;
   camelGallery: string | null;
+  selectionAvailable?: boolean; 
 }

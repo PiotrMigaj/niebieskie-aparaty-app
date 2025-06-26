@@ -21,6 +21,7 @@
           <UIcon name="i-heroicons-photo" class="text-gray-700" />
           Galeria
         </NuxtLink>
+
       </div>
 
       <!-- Content section - right side on larger screens -->
@@ -39,6 +40,11 @@
             class="hidden md:flex items-center gap-2 text-sm px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-200 transition duration-200 shadow-sm font-medium">
             <UIcon name="i-heroicons-photo" class="text-gray-600" />
             Przejdź do galerii
+          </NuxtLink>
+          <NuxtLink v-if="event.selectionAvailable" :to="`/selections/${event.eventId}`"
+            class="hidden md:flex items-center gap-2 text-sm px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-200 transition duration-200 shadow-sm font-medium">
+            <UIcon name="i-heroicons-photo" class="text-gray-600" />
+            Wybierz zdjęcia
           </NuxtLink>
         </div>
         <div class="flex items-center mt-1 text-gray-500">
