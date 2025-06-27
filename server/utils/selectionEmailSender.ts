@@ -110,19 +110,19 @@ export const sendSelectionEmail = async (
   `;
 
   const params = {
-    Source: 'Niebieskie Aparaty <kozlowska0705@gmail.com>',
+    Source: "Niebieskie Aparaty <kozlowska0705@gmail.com>",
     Destination: {
-      ToAddresses: ['kozlowska0705@gmail.com'],
+      ToAddresses: ["kozlowska0705@gmail.com", "pmigaj@gmail.com"],
     },
     Message: {
       Subject: {
         Data: `Nowy wybór zdjęć od ${username}`,
-        Charset: 'UTF-8',
+        Charset: "UTF-8",
       },
       Body: {
         Html: {
           Data: htmlBody,
-          Charset: 'UTF-8',
+          Charset: "UTF-8",
         },
       },
     },
