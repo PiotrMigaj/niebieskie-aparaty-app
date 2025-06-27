@@ -15,7 +15,7 @@
             <UIcon name="i-heroicons-photo" class="text-gray-700" />
             Galeria
           </NuxtLink>
-          <NuxtLink v-else-if="event.camelGallery === 'true'" :to="`/events/${event.eventId}/gallery`"
+          <NuxtLink v-else-if="event.camelGallery" :to="`/events/${event.eventId}/gallery`"
             class="flex items-center gap-2 text-sm px-4 py-2 bg-white bg-opacity-90 rounded-lg text-gray-800 hover:bg-opacity-100 transition duration-200 shadow-md font-medium">
             <UIcon name="i-heroicons-photo" class="text-gray-700" />
             Galeria
@@ -38,7 +38,7 @@
               <UIcon name="i-heroicons-photo" class="text-gray-600" />
               Przejdź do galerii
             </NuxtLink>
-            <NuxtLink v-else-if="event.camelGallery === 'true'" :to="`/events/${event.eventId}/gallery`"
+            <NuxtLink v-else-if="event.camelGallery" :to="`/events/${event.eventId}/gallery`"
               class="items-center gap-2 text-sm px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-200 transition duration-200 shadow-sm font-medium flex">
               <UIcon name="i-heroicons-photo" class="text-gray-600" />
               Przejdź do galerii
@@ -70,7 +70,7 @@
         <UIcon name="i-heroicons-photo" class="text-gray-600" />
         Przejdź do galerii
       </NuxtLink>
-      <NuxtLink v-else-if="event.camelGallery === 'true'"
+      <NuxtLink v-else-if="event"
         :to="`/events/${event.eventId}/gallery`"
         class="flex-1 flex items-center justify-center gap-2 text-sm px-4 py-3 bg-gray-100 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-200 transition duration-200 shadow-sm font-medium">
         <UIcon name="i-heroicons-photo" class="text-gray-600" />
