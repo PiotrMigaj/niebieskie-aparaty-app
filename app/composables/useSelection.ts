@@ -9,6 +9,10 @@ export default function useSelection() {
   // State management
   const selectedImages = useState<string[]>("selectedImages", () => []);
 
+  const selectedImagesSorted = computed(() => {
+    return [...selectedImages.value].sort((a, b) => a.localeCompare(b));
+  });
+
   // Cookie persistence
   const selectedImagesCookie = useCookie<string[]>("selectedImages", {
     default: () => [],
@@ -87,6 +91,17 @@ export default function useSelection() {
         selected: selectedImages.value.includes(item.imageName),
       }));
   });
+
+  async function fetchSelection(eventId: string) {
+    try {
+      const fetchedSelection = await $fetch<Selection>(
+        `/api/selections/${eventId}`
+      );
+      selection.value = fetchedSelection;
+    } catch (error) {
+      console.error("Error fetching selection and selection items:", error);
+    }
+  }
 
   async function fetchSelectionWithItems(eventId: string) {
     try {
@@ -176,5 +191,7 @@ export default function useSelection() {
     handleKeydown,
     selection,
     selectedImages,
+    selectedImagesSorted,
+    fetchSelection,
   };
 }

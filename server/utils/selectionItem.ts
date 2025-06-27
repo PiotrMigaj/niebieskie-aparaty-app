@@ -6,6 +6,12 @@ export interface SelectionItemRepository {
     selectionId: string,
     username: string
   ): Promise<SelectionItem[]>;
+
+  submitSelection(
+    imageName: string,
+    selectionId: string,
+    username: string
+  ): Promise<void>;
 }
 
 class SelectionItemRepositoryImpl implements SelectionItemRepository {
@@ -14,6 +20,43 @@ class SelectionItemRepositoryImpl implements SelectionItemRepository {
 
   constructor() {
     this.docClient = getDynamoClient();
+  }
+
+  async submitSelection(
+    imageName: string,
+    selectionId: string,
+    username: string
+  ): Promise<void> {
+    try {
+      const command = new UpdateCommand({
+        TableName: this.tableName,
+        Key: {
+          imageName,
+          selectionId,
+        },
+        UpdateExpression: `
+          SET selected = :selected
+        `,
+        ConditionExpression: "username = :username",
+        ExpressionAttributeValues: {
+          ":selected": true,
+          ":username": username,
+        },
+      });
+
+      await this.docClient.send(command);
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.name === "ConditionalCheckFailedException"
+      ) {
+        throw new Error(
+          `Selection item not found or username mismatch for imageName=${imageName}, selectionId=${selectionId}`
+        );
+      }
+      console.error("Error updating selection item:", error);
+      throw error;
+    }
   }
 
   async getItemsBySelectionIdAndUsername(

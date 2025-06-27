@@ -6,6 +6,12 @@ export interface SelectionRepository {
     eventId: string,
     username: string
   ): Promise<Selection | null>;
+
+  submitSelection(
+    selectionId: string,
+    username: string,
+    selectedImages: string[]
+  ): Promise<void>;
 }
 
 class SelectionRepositoryImpl implements SelectionRepository {
@@ -14,6 +20,53 @@ class SelectionRepositoryImpl implements SelectionRepository {
 
   constructor() {
     this.docClient = getDynamoClient();
+  }
+  async submitSelection(
+    selectionId: string,
+    username: string,
+    selectedImages: string[]
+  ): Promise<void> {
+    try {
+      const selectedNumberOfPhotos = selectedImages.length;
+      const updatedAt = new Date().toISOString();
+
+      const command = new UpdateCommand({
+        TableName: this.tableName,
+        Key: {
+          selectionId,
+        },
+        // Set the fields you want to update:
+        UpdateExpression: `
+          SET 
+            blocked = :blocked, 
+            selectedImages = :selectedImages, 
+            selectedNumberOfPhotos = :selectedNumberOfPhotos, 
+            updatedAt = :updatedAt
+        `,
+        // Condition ensures the username matches:
+        ConditionExpression: "username = :username",
+        ExpressionAttributeValues: {
+          ":blocked": true,
+          ":selectedImages": selectedImages,
+          ":selectedNumberOfPhotos": selectedNumberOfPhotos,
+          ":updatedAt": updatedAt,
+          ":username": username,
+        },
+      });
+
+      await this.docClient.send(command);
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.name === "ConditionalCheckFailedException"
+      ) {
+        throw new Error(
+          `Selection not found for given selectionId and username`
+        );
+      }
+      console.error("Error updating selection:", error);
+      throw error;
+    }
   }
 
   async getSelectionByEventIdAndUsername(
