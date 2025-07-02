@@ -43,11 +43,11 @@ export default function useSelection() {
   function closeImage() {
     selectedImageIndex.value = null;
   }
-  
+
   function setImageLoaded(imageName: string) {
     loadedImages.value[imageName] = true;
   }
-  
+
   async function downloadImage(url: string | undefined) {
     if (!url) return;
 
@@ -75,13 +75,6 @@ export default function useSelection() {
       isDownloading.value = false;
     }
   }
-
-  const processedSelectedItems = computed(() => {
-    return selectedItems.value.map((item) => ({
-      ...item,
-      selected: selectedImages.value.includes(item.imageName),
-    }));
-  });
 
   const filteredSelectedItems = computed(() => {
     return selectedItems.value
@@ -167,10 +160,9 @@ export default function useSelection() {
     ) {
       selectedImageIndex.value++;
     }
-  };
+  }
 
   return {
-    processedSelectedItems,
     filteredSelectedItems,
     fetchSelectionWithItems,
     clearSelection,
@@ -193,5 +185,6 @@ export default function useSelection() {
     selectedImages,
     selectedImagesSorted,
     fetchSelection,
+    selectedItems,
   };
 }

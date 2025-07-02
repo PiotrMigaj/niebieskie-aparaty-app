@@ -132,7 +132,6 @@ definePageMeta({
 
 const route = useRoute();
 const {
-  processedSelectedItems,
   filteredSelectedItems,
   fetchSelectionWithItems,
   selectedImageIndex,
@@ -149,6 +148,7 @@ const {
   selectedImages,
   selectedImagesSorted,
   fetchSelection,
+  selectedItems,
 } = useSelection();
 
 const loading = ref<boolean>(true);
@@ -160,10 +160,10 @@ const toast = useToast();
 const tabs = computed(() => [
   {
     key: 'all',
-    label: `Wszystkie zdjęcia (${processedSelectedItems.value.length})`,
+    label: `Wszystkie zdjęcia (${selectedItems.value.length})`,
     title: 'Wszystkie zdjęcia',
     icon: 'heroicons:photo-20-solid',
-    items: processedSelectedItems,
+    items: selectedItems,
   },
   {
     key: 'selected',

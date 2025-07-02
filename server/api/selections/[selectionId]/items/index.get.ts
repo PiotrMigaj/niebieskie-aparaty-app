@@ -32,7 +32,6 @@ export default defineEventHandler(async (event) => {
     selectionId,
     username
   );
-
   if (selectionItems.length === 0) {
     throw createError({
       statusCode: 404,

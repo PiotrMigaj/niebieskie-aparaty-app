@@ -14,10 +14,18 @@
             @click="$emit('open-image', index)">
             <div class="relative w-full h-full">
               <div v-if="!loadedImages[item.imageName]" class="absolute inset-0 bg-gray-300 animate-pulse z-0"></div>
-              <img :src="item.presignedUrl" :alt="item.imageName"
+              <NuxtImg
+                :src="item.presignedUrl"
+                :alt="item.imageName"
                 class="w-full h-auto object-cover z-10 transition-opacity duration-500"
                 :class="{ 'opacity-0': !loadedImages[item.imageName], 'opacity-100': loadedImages[item.imageName] }"
-                @load="$emit('image-loaded', item.imageName)"/>
+                @load="$emit('image-loaded', item.imageName)"
+                :width="item.imageWidth"
+                :height="item.imageHeight"
+                format="webp"
+                :placeholder="true"
+                loading="lazy"
+              />
               <!-- Selection icon bottom left -->
               <button
                 class="absolute left-3 bottom-3 z-30 w-10 h-10 rounded-full shadow-lg flex items-center justify-center transition-all duration-200"

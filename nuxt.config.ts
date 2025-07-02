@@ -6,7 +6,7 @@ export default defineNuxtConfig({
     compatibilityVersion: 4,
   },
 
-  modules: ["nuxt-auth-utils", "@nuxt/ui"],
+  modules: ["nuxt-auth-utils", "@nuxt/ui", "@nuxt/image"],
   css: ["~/assets/css/main.css"],
   ui: {
     colorMode: false,
