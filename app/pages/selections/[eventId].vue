@@ -39,10 +39,39 @@
     <UTabs v-else :items="tabs" class="w-full">
       <template #content="{ item }">
         <div class="py-6">
-          <SelectedItemsWrapper :title="item.title" :items="item.items.value" :selectedImageIndex="selectedImageIndex"
-            :isDownloading="isDownloading" :isSelected="isSelected" :loadedImages="loadedImages" @open-image="openImage"
-            @close-image="closeImage" @download-image="downloadImage" @toggle-selection="toggleSelection"
-            @image-loaded="setImageLoaded" />
+          <SelectedItemsWrapper
+              :title="item.title"
+              :items="getItemsForTab(item)"
+              :selectedImageIndex="selectedImageIndex"
+              :isDownloading="isDownloading"
+              :isSelected="isSelected"
+              :loadedImages="loadedImages"
+              @open-image="openImage"
+              @close-image="closeImage"
+              @download-image="downloadImage"
+              @toggle-selection="toggleSelection"
+              @image-loaded="setImageLoaded"
+            />
+          <div
+            v-if="item.key === 'all'"
+            class="flex justify-center my-6 w-full"
+          >
+            <div class="w-full max-w-full overflow-x-auto px-2 sm:px-0">
+              <div class="flex justify-center min-w-fit">
+                <UPagination
+                  v-model:page="allTabPage"
+                  :total="item.items.value.length"
+                  :items-per-page="pageSize"
+                  :to="to"
+                  :sibling-count="isMobile ? 0 : 1"
+                  show-edges
+                  :size="isMobile ? 'sm' : 'md'"
+                  color="primary"
+                  class="flex-shrink-0"
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </template>
     </UTabs>
@@ -157,6 +186,14 @@ const showConfirmationModal = ref<boolean>(false);
 
 const toast = useToast();
 
+// Mobile detection
+const isMobile = computed(() => {
+  if (import.meta.client) {
+    return window.innerWidth < 640; // sm breakpoint
+  }
+  return false;
+});
+
 const tabs = computed(() => [
   {
     key: 'all',
@@ -173,6 +210,44 @@ const tabs = computed(() => [
     items: filteredSelectedItems,
   }
 ])
+
+// Separate pagination state for 'all' tab only
+const allTabPage = ref(1)
+const pageSize = 60
+
+// Watch for page changes and scroll to top
+watch(allTabPage, (newPage, oldPage) => {
+  if (newPage !== oldPage && import.meta.client) {
+    console.log("Hello misie pysie")
+    // Small delay to ensure content is rendered
+    nextTick(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    });
+  }
+});
+
+function to(page: number) {
+  return {
+    query: {
+      page
+    },
+  }
+}
+
+// Function to get items for each tab - paginated for 'all', full list for 'selected'
+function getItemsForTab(item: any) {
+  if (item.key === 'all') {
+    // Return paginated items for 'all' tab
+    const start = (allTabPage.value - 1) * pageSize
+    return item.items.value.slice(start, start + pageSize)
+  } else {
+    // Return all items for 'selected' tab (no pagination)
+    return item.items.value
+  }
+}
 
 onMounted(async () => {
   loading.value = true;
@@ -214,13 +289,6 @@ async function handleSubmitSelection() {
     submitSelection()
   }
 }
-
-
-function confirmSubmitSelection() {
-  showConfirmationModal.value = false;
-  submitSelection();
-}
-
 
 async function submitSelection() {
   if (!selection.value) return;
