@@ -23,6 +23,7 @@
     "date-fns": "^4.1.0",
     "lucide-vue-next": "^0.503.0",
     "nuxt": "^3.16.2",
+    "nuxt-anchorscroll": "^1.0.5",
     "nuxt-auth-utils": "^0.5.18",
     "sharp": "^0.33.2",
     "vue": "^3.5.13",

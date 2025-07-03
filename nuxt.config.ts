@@ -6,10 +6,16 @@ export default defineNuxtConfig({
     compatibilityVersion: 4,
   },
 
-  modules: ["nuxt-auth-utils", "@nuxt/ui", "@nuxt/image"],
+  modules: [
+    "nuxt-auth-utils",
+    "@nuxt/ui",
+    "@nuxt/image",
+    "nuxt-anchorscroll",
+  ],
   css: ["~/assets/css/main.css"],
   ui: {
     colorMode: false,
     fonts: false,
   },
+  
 });

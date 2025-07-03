@@ -36,39 +36,19 @@
       <UProgress animation="swing" size="lg" />
     </div>
 
-    <UTabs v-else :items="tabs" class="w-full">
+    <UTabs id="uTabsId" v-else :items="tabs" class="w-full">
       <template #content="{ item }">
         <div class="py-6">
-          <SelectedItemsWrapper
-              :title="item.title"
-              :items="getItemsForTab(item)"
-              :selectedImageIndex="selectedImageIndex"
-              :isDownloading="isDownloading"
-              :isSelected="isSelected"
-              :loadedImages="loadedImages"
-              @open-image="openImage"
-              @close-image="closeImage"
-              @download-image="downloadImage"
-              @toggle-selection="toggleSelection"
-              @image-loaded="setImageLoaded"
-            />
-          <div
-            v-if="item.key === 'all'"
-            class="flex justify-center my-6 w-full"
-          >
+          <SelectedItemsWrapper :title="item.title" :items="getItemsForTab(item)"
+            :selectedImageIndex="selectedImageIndex" :isDownloading="isDownloading" :isSelected="isSelected"
+            :loadedImages="loadedImages" @open-image="openImage" @close-image="closeImage"
+            @download-image="downloadImage" @toggle-selection="toggleSelection" @image-loaded="setImageLoaded" />
+          <div v-if="item.key === 'all'" class="flex justify-center my-6 w-full">
             <div class="w-full max-w-full overflow-x-auto px-2 sm:px-0">
               <div class="flex justify-center min-w-fit">
-                <UPagination
-                  v-model:page="allTabPage"
-                  :total="item.items.value.length"
-                  :items-per-page="pageSize"
-                  :to="to"
-                  :sibling-count="isMobile ? 0 : 1"
-                  show-edges
-                  :size="isMobile ? 'sm' : 'md'"
-                  color="primary"
-                  class="flex-shrink-0"
-                />
+                <UPagination v-model:page="allTabPage" :total="item.items.value.length" :items-per-page="pageSize"
+                  :to="to" :sibling-count="isMobile ? 0 : 1" show-edges :size="isMobile ? 'sm' : 'md'" color="primary"
+                  class="flex-shrink-0" />
               </div>
             </div>
           </div>
@@ -118,7 +98,9 @@
     </UCard>
 
     <!-- Thank you summary for blocked selection -->
-    <UCard v-if="!loading && selection && selection.blocked && selection.selectedImages && selection.selectedImages.length > 0" class="mt-8">
+    <UCard
+      v-if="!loading && selection && selection.blocked && selection.selectedImages && selection.selectedImages.length > 0"
+      class="mt-8">
       <div class="flex flex-col gap-4 items-start">
         <div class="flex items-center gap-2">
           <UIcon name="i-heroicons-check-badge" class="w-7 h-7 text-gray-500" />
@@ -139,20 +121,21 @@
             Wybrane zdjęcia:
           </div>
           <ul class="list-disc list-inside text-sm text-gray-600 pl-4">
-            <li v-for="img in (selection.selectedImages as string[]).slice().sort((a, b) => a.localeCompare(b))" :key="img">
+            <li v-for="img in (selection.selectedImages as string[]).slice().sort((a, b) => a.localeCompare(b))"
+              :key="img">
               {{ img }}
             </li>
           </ul>
         </div>
       </div>
     </UCard>
-
   </div>
 </template>
 
 <script setup lang="ts">
 import { ConfirmationModal } from '#components';
 import type { SelectionSubmitPayload } from '../../../types/selection.types';
+
 
 definePageMeta({
   middleware: ["authenticated"],
@@ -215,17 +198,21 @@ const tabs = computed(() => [
 const allTabPage = ref(1)
 const pageSize = 60
 
-// Watch for page changes and scroll to top
-watch(allTabPage, (newPage, oldPage) => {
+const { scrollToAnchor } = useAnchorScroll({
+  toTop: {
+    scrollOptions: {
+      behavior: 'smooth',
+      offsetTop: 0,
+    }
+  },
+})
+
+watch(allTabPage, async (newPage, oldPage) => {
   if (newPage !== oldPage && import.meta.client) {
     console.log("Hello misie pysie")
-    // Small delay to ensure content is rendered
-    nextTick(() => {
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
-    });
+    // Small delay to wait for child components/images to render:
+    await setTimer(100); // 50-200ms depending on complexity
+    scrollToAnchor('uTabsId');
   }
 });
 
