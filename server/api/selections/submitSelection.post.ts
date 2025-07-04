@@ -1,10 +1,11 @@
 import {
-  SelectionRepository,
   SelectionRepositoryFactory,
-} from "~~/server/utils/selection";
-import type { AuthUser } from "../../../types/auth.types";
-import type { SelectionSubmitPayload } from "~~/types/selection.types";
+} from "~~/server/repository/selectionRepository";
+import type { AuthUser } from "../../../shared/types/auth.types";
+import type { SelectionSubmitPayload } from "~~/shared/types/selection.types";
 import { sendSelectionEmail } from "~~/server/utils/selectionEmailSender";
+import { SelectionItemRepositoryFactory } from "~~/server/repository/selectionItemRepository";
+import { isUserAuthenticated } from "~~/server/service/authService";
 
 export default defineEventHandler(async (event) => {
   const authUser: AuthUser | undefined = await isUserAuthenticated(event);

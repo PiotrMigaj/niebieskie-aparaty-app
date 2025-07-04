@@ -1,4 +1,4 @@
-import type { EventGallery } from "../../types/eventGallery.types";
+import type { EventGallery } from "../../shared/types/eventGallery.types";
 
 interface EventGalleryImageWithThumbnail extends EventGallery {
   itemImageSrc: string;

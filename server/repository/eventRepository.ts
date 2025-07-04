@@ -1,5 +1,6 @@
 import { ScanCommand } from "@aws-sdk/lib-dynamodb";
-import type { EventDto } from "../../types/event.types";
+import type { EventDto } from "../../shared/types/event.types";
+import { getDynamoClient } from "../config/db";
 
 export interface EventRepository {
   getEventsByUsername(username: string): Promise<EventDto[]>;

@@ -1,4 +1,4 @@
-import type { Selection, SelectionItem } from "~~/types/selection.types";
+import type { Selection, SelectionItem } from "~~/shared/types/selection.types";
 
 export default function useSelection() {
   const toast = useToast();

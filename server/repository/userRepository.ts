@@ -1,5 +1,6 @@
 import { GetCommand } from "@aws-sdk/lib-dynamodb";
-import type { UserDto } from "../../types/user.types";
+import type { UserDto } from "../../shared/types/user.types";
+import { getDynamoClient } from "../config/db";
 
 export interface UserRepository {
   getUserByUsername(username: string): Promise<UserDto | null>;

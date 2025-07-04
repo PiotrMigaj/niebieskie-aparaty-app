@@ -1,5 +1,5 @@
-import { AuthService } from "../utils/auth";
-import type { AuthUser } from "../../types/auth.types";
+import { AuthService } from "../service/authService";
+import type { AuthUser } from "../../shared/types/auth.types";
 
 export default defineEventHandler(async (event) => {
   const { credentials } = await readBody(event);

@@ -1,6 +1,6 @@
 import { SendEmailCommand } from "@aws-sdk/client-ses";
-import type { SelectionSubmitPayload } from "~~/types/selection.types";
-import { getSESClient } from "./ses";
+import type { SelectionSubmitPayload } from "~~/shared/types/selection.types";
+import { getSESClient } from "../config/ses";
 
 export const sendSelectionEmail = async (
   username: string,

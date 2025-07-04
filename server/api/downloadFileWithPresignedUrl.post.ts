@@ -1,3 +1,6 @@
+import { FileRepository, FileRepositoryFactory } from "../repository/fileRepository";
+import { isUserAuthenticated } from "../service/authService";
+
 export default defineEventHandler(async (event) => {
   await isUserAuthenticated(event);
   try {

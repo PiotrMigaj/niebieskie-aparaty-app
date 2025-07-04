@@ -1,3 +1,5 @@
+import { isUserAuthenticated } from "../service/authService";
+
 export default defineEventHandler(async (event) => {
   await isUserAuthenticated(event);
   const { objectKey, fileId } = await readBody(event);

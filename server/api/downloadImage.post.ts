@@ -1,4 +1,5 @@
 import sharp from 'sharp';
+import { isUserAuthenticated } from '../service/authService';
 
 export default defineEventHandler(async (event) => {
   await isUserAuthenticated(event);

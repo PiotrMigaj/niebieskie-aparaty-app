@@ -1,6 +1,7 @@
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { FileWithObjectKeyDto } from "../../types/file.types";
+import { FileWithObjectKeyDto } from "../../shared/types/file.types";
+import { FileRepositoryFactory } from "../repository/fileRepository";
 
 const REGION = process.env.AWS_REGION as string;
 const BUCKET_NAME = "niebieskie-aparaty-client-gallery";

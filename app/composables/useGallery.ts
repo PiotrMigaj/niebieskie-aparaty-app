@@ -1,4 +1,4 @@
-import type { GalleryImage, GalleryDto } from "../../types/gallery.types";
+import type { GalleryImage, GalleryDto } from "../../shared/types/gallery.types";
 
 interface GalleryImageWithThumbnail extends GalleryImage {
   itemImageSrc: string;

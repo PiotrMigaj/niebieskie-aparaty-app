@@ -1,6 +1,9 @@
-import type { AuthUser } from "../../types/auth.types";
-import type { EventDto } from "../../types/event.types";
-import type { FileDto } from "../../types/file.types";
+import type { AuthUser } from "../../shared/types/auth.types";
+import type { EventDto } from "../../shared/types/event.types";
+import type { FileDto } from "../../shared/types/file.types";
+import { EventRepository, EventRepositoryFactory } from "../repository/eventRepository";
+import { FileRepositoryFactory } from "../repository/fileRepository";
+import { isUserAuthenticated } from "../service/authService";
 
 export default defineEventHandler(async (event) => {
   const authUser: AuthUser | undefined = await isUserAuthenticated(event);

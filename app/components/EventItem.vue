@@ -117,7 +117,7 @@
 </template>
 
 <script setup lang="ts">
-import type { EventDto } from '../../types/event.types';
+import type { EventDto } from '../../shared/types/event.types';
 
 const props = defineProps<{
   event: EventDto

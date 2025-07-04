@@ -1,8 +1,9 @@
 import { ScanCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
-import { getS3Client } from "./s3";
-import type { GalleryDto } from "../../types/gallery.types";
+import { getS3Client } from "../config/s3";
+import type { GalleryDto } from "../../shared/types/gallery.types";
+import { getDynamoClient } from "../config/db";
 
 const BUCKET_NAME = "niebieskie-aparaty-client-gallery";
 

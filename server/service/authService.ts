@@ -1,8 +1,8 @@
 import { getRequestURL, H3Event, sendRedirect, use } from "h3";
 import { GetCommand } from "@aws-sdk/lib-dynamodb";
-import { getDynamoClient } from "./db";
+import { getDynamoClient } from "../config/db";
 import bcrypt from "bcrypt";
-import type { AuthUser, AuthRequest } from "../../types/auth.types";
+import type { AuthUser, AuthRequest } from "../../shared/types/auth.types";
 
 export const isUserAuthenticated = async (
   event: H3Event

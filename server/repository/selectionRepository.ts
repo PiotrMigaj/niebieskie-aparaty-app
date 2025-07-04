@@ -1,5 +1,6 @@
 import { ScanCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
-import type { Selection } from "../../types/selection.types";
+import type { Selection } from "../../shared/types/selection.types";
+import { getDynamoClient } from "../config/db";
 
 export interface SelectionRepository {
   getSelectionByEventIdAndUsername(

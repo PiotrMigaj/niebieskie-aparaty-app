@@ -135,7 +135,7 @@
 </template>
 
 <script setup lang="ts">
-import type { SelectionItem } from '~~/types/selection.types';
+import type { SelectionItem } from '~~/shared/types/selection.types';
 
 const props = defineProps<{
   title: string,

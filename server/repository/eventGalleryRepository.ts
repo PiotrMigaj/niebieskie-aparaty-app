@@ -1,5 +1,6 @@
 import { ScanCommand } from "@aws-sdk/lib-dynamodb";
-import type { EventGallery } from "../../types/eventGallery.types";
+import type { EventGallery } from "../../shared/types/eventGallery.types";
+import { getDynamoClient } from "../config/db";
 
 export interface EventGalleryRepository {
   getImagesByEventIdAndUsername(

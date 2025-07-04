@@ -1,5 +1,6 @@
 import { GetCommand, ScanCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
-import type { FileDto, FileWithObjectKeyDto } from "../../types/file.types";
+import type { FileDto, FileWithObjectKeyDto } from "../../shared/types/file.types";
+import { getDynamoClient } from "../config/db";
 
 export interface FileRepository {
   getFilesForUsernameAndEventId(

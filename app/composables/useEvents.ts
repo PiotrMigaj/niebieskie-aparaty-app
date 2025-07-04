@@ -1,5 +1,5 @@
-import type { EventDto } from "../../types/event.types";
-import type { FileDto } from "../../types/file.types";
+import type { EventDto } from "../../shared/types/event.types";
+import type { FileDto } from "../../shared/types/file.types";
 
 export const useEvents = () => {
   const events = ref<EventDto[]>([]);

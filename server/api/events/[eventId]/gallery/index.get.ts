@@ -1,6 +1,7 @@
-import { EventGalleryRepository, EventGalleryRepositoryFactory } from "~~/server/utils/eventGallery";
-import type { AuthUser } from "~~/types/auth.types";
-import type { EventGallery } from "~~/types/eventGallery.types";
+import { EventGalleryRepository, EventGalleryRepositoryFactory } from "~~/server/repository/eventGalleryRepository";
+import { isUserAuthenticated } from "~~/server/service/authService";
+import type { AuthUser } from "~~/shared/types/auth.types";
+import type { EventGallery } from "~~/shared/types/eventGallery.types";
 
 export default defineEventHandler(async (event) => {
   const authUser: AuthUser | undefined = await isUserAuthenticated(event);

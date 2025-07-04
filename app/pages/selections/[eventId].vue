@@ -134,8 +134,6 @@
 
 <script setup lang="ts">
 import { ConfirmationModal } from '#components';
-import type { SelectionSubmitPayload } from '../../../types/selection.types';
-
 
 definePageMeta({
   middleware: ["authenticated"],

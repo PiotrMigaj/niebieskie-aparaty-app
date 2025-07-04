@@ -1,8 +1,9 @@
 import {
   SelectionRepository,
   SelectionRepositoryFactory,
-} from "~~/server/utils/selection";
-import type { AuthUser } from "../../../types/auth.types";
+} from "~~/server/repository/selectionRepository";
+import type { AuthUser } from "../../../shared/types/auth.types";
+import { isUserAuthenticated } from "~~/server/service/authService";
 
 export default defineEventHandler(async (event) => {
   const authUser: AuthUser | undefined = await isUserAuthenticated(event);
