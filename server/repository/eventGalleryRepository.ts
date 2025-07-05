@@ -22,22 +22,36 @@ class EventGalleryRepositoryImpl implements EventGalleryRepository {
     username: string
   ): Promise<EventGallery[]> {
     try {
-      const command = new ScanCommand({
-        TableName: this.tableName,
-        FilterExpression: "eventId = :eventId AND username = :username",
-        ExpressionAttributeValues: {
-          ":eventId": eventId,
-          ":username": username,
-        },
-      });
+      const allItems: EventGallery[] = [];
+      let lastEvaluatedKey: Record<string, any> | undefined;
 
-      const { Items } = await this.docClient.send(command);
-      const gallery = (Items as EventGallery[]) ?? [];
+      do {
+        const command = new ScanCommand({
+          TableName: this.tableName,
+          FilterExpression: "eventId = :eventId AND username = :username",
+          ExpressionAttributeValues: {
+            ":eventId": eventId,
+            ":username": username,
+          },
+          ExclusiveStartKey: lastEvaluatedKey,
+        });
 
-      // Sort by fileName (alphabetically)
-      gallery.sort((a, b) => a.fileName.localeCompare(b.fileName));
+        const response = await this.docClient.send(command);
+        const items = (response.Items as EventGallery[]) ?? [];
 
-      return gallery;
+        allItems.push(...items);
+        lastEvaluatedKey = response.LastEvaluatedKey;
+
+        console.log(
+          `Fetched ${items.length} gallery items, total so far: ${allItems.length}`
+        );
+      } while (lastEvaluatedKey);
+
+      // Sort by fileName (alphabetically) once after collecting all items
+      allItems.sort((a, b) => a.fileName.localeCompare(b.fileName));
+
+      console.log(`Total gallery items retrieved: ${allItems.length}`);
+      return allItems;
     } catch (error) {
       console.error("Error fetching event gallery:", error);
       throw error;

@@ -57,78 +57,14 @@
     </UTabs>
 
     <!-- Summary Section -->
-    <UCard v-if="!loading && selection && !selection.blocked" class="mt-8">
-      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-        <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-          <div class="flex items-center gap-2">
-            <UIcon name="i-heroicons-photo" class="w-5 h-5 text-gray-500" />
-            <span class="text-sm font-medium text-gray-700">Wybrano zdjęć:</span>
-            <UBadge :label="selectedImages.length.toString()" color="primary" variant="solid" size="lg" />
-          </div>
-
-          <div class="w-px h-6 bg-gray-300 hidden sm:block" />
-
-          <span class="text-gray-400 sm:hidden">/</span>
-
-          <div class="flex items-center gap-2">
-            <UIcon name="i-heroicons-gift" class="w-5 h-5 text-gray-500" />
-            <span class="text-sm font-medium text-gray-700">Pakiet obejmuje:</span>
-            <UBadge :label="selection.maxNumberOfPhotos.toString()" color="primary" variant="solid" size="lg" />
-          </div>
-        </div>
-
-        <UButton @click="handleSubmitSelection" color="primary" size="lg" icon="i-heroicons-paper-airplane"
-          :loading="isSubmitting" :disabled="selection.blocked">
-          Prześlij wybór do fotografa
-        </UButton>
-      </div>
-      <!-- Selected images list -->
-      <div class="mt-6">
-        <div class="font-semibold mb-2 text-gray-700 flex items-center gap-2">
-          <UIcon name="i-heroicons-list-bullet" class="w-5 h-5 text-primary" />
-          Wybrane zdjęcia:
-        </div>
-        <ul class="list-disc list-inside text-sm text-gray-600 pl-4">
-          <li v-for="img in selectedImagesSorted" :key="img">
-            {{ img }}
-          </li>
-          <li v-if="selectedImagesSorted.length === 0" class="italic text-gray-400">Brak wybranych zdjęć</li>
-        </ul>
-      </div>
-    </UCard>
+    <SelectedItemsWrapperSummarySection v-if="!loading && selection && !selection.blocked" :selection="selection"
+      :selectedImages="selectedImages" :selectedImagesSorted="selectedImagesSorted" :isSubmitting="isSubmitting"
+      :handleSubmitSelection="handleSubmitSelection" />
 
     <!-- Thank you summary for blocked selection -->
-    <UCard
+    <SelectedItemsWrapperThankYouSection
       v-if="!loading && selection && selection.blocked && selection.selectedImages && selection.selectedImages.length > 0"
-      class="mt-8">
-      <div class="flex flex-col gap-4 items-start">
-        <div class="flex items-center gap-2">
-          <UIcon name="i-heroicons-check-badge" class="w-7 h-7 text-gray-500" />
-          <span class="text-xl font-bold text-gray-700">Dziękujemy za wybór zdjęć!</span>
-        </div>
-        <div class="text-gray-700">
-          Twój wybór został zapisany i przesłany do fotografa.<br>
-          Fotograf otrzymał informację o wybranych zdjęciach i wkrótce rozpocznie ich obróbkę.
-        </div>
-        <div class="flex items-center gap-2 mt-2">
-          <UIcon name="i-heroicons-photo" class="w-5 h-5 text-gray-500" />
-          <span class="text-sm font-medium text-gray-700">Liczba wybranych zdjęć:</span>
-          <UBadge :label="selection.selectedImages.length.toString()" color="primary" variant="solid" size="lg" />
-        </div>
-        <div class="mt-4 w-full">
-          <div class="font-semibold mb-2 text-gray-700 flex items-center gap-2">
-            <UIcon name="i-heroicons-list-bullet" class="w-5 h-5 text-primary" />
-            Wybrane zdjęcia:
-          </div>
-          <ul class="list-disc list-inside text-sm text-gray-600 pl-4">
-            <li v-for="img in (selection.selectedImages as string[]).slice().sort((a, b) => a.localeCompare(b))"
-              :key="img">
-              {{ img }}
-            </li>
-          </ul>
-        </div>
-      </div>
-    </UCard>
+      :selection="selection" :selectedImages="selection.selectedImages" />
   </div>
 </template>
 

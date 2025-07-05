@@ -65,21 +65,37 @@ class SelectionItemRepositoryImpl implements SelectionItemRepository {
     username: string
   ): Promise<SelectionItem[]> {
     try {
-      const command = new ScanCommand({
-        TableName: this.tableName,
-        FilterExpression: "selectionId = :selectionId AND username = :username",
-        ExpressionAttributeValues: {
-          ":selectionId": selectionId,
-          ":username": username,
-        },
-      });
+      const allItems: SelectionItem[] = [];
+      let lastEvaluatedKey: Record<string, any> | undefined;
 
-      const { Items } = await this.docClient.send(command);
-      const items = (Items as SelectionItem[]) ?? [];
+      do {
+        const command = new ScanCommand({
+          TableName: this.tableName,
+          FilterExpression:
+            "selectionId = :selectionId AND username = :username",
+          ExpressionAttributeValues: {
+            ":selectionId": selectionId,
+            ":username": username,
+          },
+          ExclusiveStartKey: lastEvaluatedKey,
+        });
 
-      items.sort((a, b) => a.imageName.localeCompare(b.imageName));
+        const response = await this.docClient.send(command);
+        const items = (response.Items as SelectionItem[]) ?? [];
 
-      return items;
+        allItems.push(...items);
+        lastEvaluatedKey = response.LastEvaluatedKey;
+
+        console.log(
+          `Fetched ${items.length} items, total so far: ${allItems.length}`
+        );
+      } while (lastEvaluatedKey);
+
+      // Sort all items once after collecting them all
+      allItems.sort((a, b) => a.imageName.localeCompare(b.imageName));
+
+      console.log(`Total items retrieved: ${allItems.length}`);
+      return allItems;
     } catch (error) {
       console.error("Error fetching selection items:", error);
       throw error;
