@@ -12,9 +12,11 @@ export const useEventGallery = () => {
   const selectedImage = ref<number | null>(null);
   const isDownloading = ref(false);
   const toast = useToast();
+  const loading = ref<boolean>(true);
 
   const fetchGallery = async (eventId: string) => {
     try {
+      loading.value = true;
       const galleryData = await $fetch<EventGallery[]>(
         `/api/events/${eventId}/gallery`
       );
@@ -29,6 +31,8 @@ export const useEventGallery = () => {
       loadedImages.value = new Array(images.value.length).fill(false);
     } catch (error) {
       console.error("Error fetching gallery:", error);
+    } finally {
+      loading.value = false;
     }
   };
 
@@ -59,6 +63,7 @@ export const useEventGallery = () => {
       isDownloading.value = false;
     }
   };
+  
 
   const openImage = (index: number) => {
     selectedImage.value = index;
@@ -88,6 +93,7 @@ export const useEventGallery = () => {
     loadedImages,
     selectedImage,
     isDownloading,
+    loading,
     fetchGallery,
     openImage,
     closeImage,

@@ -29,6 +29,7 @@ export const useGallery = () => {
       );
 
       loadedImages.value = new Array(images.value.length).fill(false);
+      console.log("DONE")
     } catch (error) {
       console.error("Error fetching gallery:", error);
     }

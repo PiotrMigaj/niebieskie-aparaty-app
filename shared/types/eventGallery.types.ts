@@ -1,13 +1,13 @@
 export interface EventGallery {
-  fileName: string;
+  // fileName: string;
   compressedFileName: string;
   compressedFileHeight: number;
   compressedFileWidth: number;
-  compressedFileObjectKey: string ;
+  // compressedFileObjectKey: string ;
   compressedFilePresignedUrl: string;
-  originalFileObjectKey: string;
+  // originalFileObjectKey: string;
   originalFilePresignedUrl: string;
-  presignDateTime: string;
-  eventId: string;
-  username: string;
+  // presignDateTime: string;
+  // eventId: string;
+  // username: string;
 }
