@@ -1,7 +1,8 @@
 <template>
   <div class="container mx-auto p-4">
-    <div v-if="loading" class="py-10">
+    <div v-if="loading" class="py-10 text-center">
       <UProgress animation="swing" size="lg" />
+      <p class="mt-4 text-gray-600">Ładowanie galerii...</p>
     </div>
     <ClientOnly>
       <RecycleScroller v-if="chunkedImages && chunkedImages.length > 0" :items="chunkedImages"

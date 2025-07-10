@@ -11,6 +11,9 @@ export const sendSelectionEmail = async (
   const now = new Date();
   const localDateTime = now.toLocaleString();
 
+  // Sort the images
+  const sortedImages = [...selection.selectedImages].sort();
+
   const htmlBody = `
     <!DOCTYPE html>
     <html>
@@ -61,21 +64,27 @@ export const sendSelectionEmail = async (
             margin: 0;
             font-size: 15px;
           }
-          .images-table {
+          .images-list {
             width: 100%;
             border-collapse: separate;
-            border-spacing: 6px 6px;
+            border-spacing: 0;
             margin-top: 10px;
           }
-          .images-table td {
+          .images-list td {
             background-color: #e9ecef;
-            padding: 6px 6px;
+            padding: 8px 12px;
             border-radius: 6px;
             font-size: 14px;
             text-align: center;
-            min-width: 80px;
-            max-width: 120px;
             word-break: break-all;
+            margin-bottom: 6px;
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+          }
+          .images-list tr {
+            display: block;
+            margin-bottom: 6px;
           }
           .footer {
             text-align: center;
@@ -103,11 +112,9 @@ export const sendSelectionEmail = async (
             .section h2 {
               font-size: 16px;
             }
-            .images-table td {
+            .images-list td {
               font-size: 12px;
-              min-width: 60px;
-              max-width: 80px;
-              padding: 4px 2px;
+              padding: 6px 8px;
             }
             .footer {
               font-size: 12px;
@@ -130,32 +137,15 @@ export const sendSelectionEmail = async (
               <p><strong>Tytuł wydarzenia:</strong> ${selection.eventTitle}</p>
             </div>
             <div class="section">
-              <h2>Wybrane zdjęcia (${selection.selectedImages.length}):</h2>
-              <table class="images-table">
+              <h2>Wybrane zdjęcia (${sortedImages.length}):</h2>
+              <table class="images-list">
                 <tbody>
-                  ${
-                    (() => {
-                      // On mobile, use 2 columns, otherwise 4
-                      // But since email clients don't support JS, we must use a single layout.
-                      // So, use 2 columns for better mobile scaling.
-                      const cols = 2;
-                      const rows = [];
-                      for (let i = 0; i < selection.selectedImages.length; i += cols) {
-                        const rowImgs = selection.selectedImages.slice(i, i + cols);
-                        rows.push(
-                          `<tr>${rowImgs
-                            .map(
-                              (img) =>
-                                `<td>${img}</td>`
-                            )
-                            .join("")}${rowImgs.length < cols
-                              ? "<td colspan='" + (cols - rowImgs.length) + "'></td>"
-                              : ""}</tr>`
-                        );
-                      }
-                      return rows.join("");
-                    })()
-                  }
+                  ${sortedImages
+                    .map(
+                      (img) =>
+                        `<tr><td>${img}</td></tr>`
+                    )
+                    .join("")}
                 </tbody>
               </table>
             </div>
