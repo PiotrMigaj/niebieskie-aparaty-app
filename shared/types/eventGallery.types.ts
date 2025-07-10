@@ -1,5 +1,5 @@
 export interface EventGallery {
-  // fileName: string;
+  fileName: string;
   compressedFileName: string;
   compressedFileHeight: number;
   compressedFileWidth: number;
