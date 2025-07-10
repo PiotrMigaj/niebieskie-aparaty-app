@@ -24,20 +24,37 @@ export default defineEventHandler(async (event) => {
       message: "Missing selectionId in request",
     });
   }
-
-  const username = authUser.username;
-  const repository: SelectionItemRepository =
-    SelectionItemRepositoryFactory.getInstance();
-
-  let selectionItems = await repository.getItemsBySelectionIdAndUsername(
-    selectionId,
-    username
+  // Create cached function for data fetching
+  const getCachedSelectionItems = defineCachedFunction(
+    async (selectionId: string, username: string) => {
+      const repository: SelectionItemRepository =
+        SelectionItemRepositoryFactory.getInstance();
+      return await repository.getItemsBySelectionIdAndUsername(
+        selectionId,
+        username
+      );
+    },
+    {
+      name: "selection-items",
+      maxAge: 60 * 5, // 5 minutes
+      getKey: (selectionId: string, username: string) =>
+        `selection-${selectionId}-${username}`,
+    }
   );
+
+  const selectionItems = await getCachedSelectionItems(
+    selectionId,
+    authUser.username
+  );
+
   if (selectionItems.length === 0) {
     throw createError({
       statusCode: 404,
       message: "Selection items not found",
     });
   }
+
+  console.log("Fetch selection items for user:", authUser.username);
+
   return selectionItems;
 });
