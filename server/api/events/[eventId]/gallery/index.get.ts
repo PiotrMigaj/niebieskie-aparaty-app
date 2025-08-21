@@ -32,10 +32,10 @@ export default defineEventHandler(async (event) => {
     },
     {
       name: 'event-gallery',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
+      maxAge: 60 * 60, // 1 hour
       getKey: (eventId: string, username: string) => `event-gallery-${eventId}-${username}`,
       swr: true,
-      staleMaxAge: 60 * 60 * 24 * 7 // 7 days
+      staleMaxAge: 60 * 60, // 1 hour
     }
   );
 
