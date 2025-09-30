@@ -5,7 +5,7 @@ export interface Selection {
   eventId: string;
   eventTitle: string;
   maxNumberOfPhotos: number;
-  selectedImages: [];
+  selectedImages: string[];
   selectedNumberOfPhotos: number;
   updatedAt: string | null;
   username: string;

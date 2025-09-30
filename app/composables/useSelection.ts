@@ -85,6 +85,12 @@ export default function useSelection() {
       }));
   });
 
+  function restoreSelectedImagesFromSelection(selection: Selection) {
+    if (!selection.blocked && selection.selectedImages && selection.selectedImages.length > 0) {
+      selectedImages.value = [...selection.selectedImages];
+    }
+  }
+
   async function fetchSelection(eventId: string) {
     try {
       const fetchedSelection = await $fetch<Selection>(
@@ -108,6 +114,8 @@ export default function useSelection() {
       );
       selectedItems.value = fetchedSelectionItems;
       loadedImages.value = {}; // Reset loading state on new fetch
+      
+      restoreSelectedImagesFromSelection(fetchedSelection);
     } catch (error) {
       console.error("Error fetching selection and selection items:", error);
     }
