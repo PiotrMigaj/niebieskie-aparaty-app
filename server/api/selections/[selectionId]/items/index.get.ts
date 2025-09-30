@@ -36,11 +36,11 @@ export default defineEventHandler(async (event) => {
     },
     {
       name: "selection-items",
-      maxAge: 60 * 60, // 1 hour
+      maxAge: 60 * 5, // 5 minutes
       getKey: (selectionId: string, username: string) =>
         `selection-${selectionId}-${username}`,
-      swr: true,
-      staleMaxAge: 60 * 60, // 1 hour
+      swr: false, // Disable stale-while-revalidate to prevent serving old data
+      staleMaxAge: 60 * 2, // 2 minutes
     }
   );
 
