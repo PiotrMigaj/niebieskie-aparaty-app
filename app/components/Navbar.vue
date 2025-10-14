@@ -1,5 +1,46 @@
 <template>
-  <nav class="fixed top-0 w-full bg-white bg-opacity-95 shadow-sm z-50">
+  <!-- Christmas Invitation Banner -->
+  <div class="fixed top-0 w-full bg-gradient-to-r from-red-600 via-red-700 to-red-600 text-white z-50 shadow-lg">
+    <div class="container mx-auto px-2 sm:px-4 py-2 sm:py-3">
+      <!-- Desktop Layout -->
+      <div class="hidden sm:flex items-center justify-center text-center">
+        <div class="flex items-center gap-2">
+          <UIcon name="i-heroicons-sparkles" class="text-yellow-300 text-lg animate-pulse" />
+          <span class="font-medium text-sm md:text-base">
+            🎄 Zapraszam na świąteczne sesje fotograficzne! 
+          </span>
+          <a 
+            href="https://niebieskie-aparaty.pl" 
+            target="_blank"
+            class="ml-2 bg-white text-red-700 px-3 py-1 rounded-full text-sm font-semibold hover:bg-red-50 transition-colors duration-300 shadow-sm"
+          >
+            Dowiedz się więcej
+          </a>
+          <UIcon name="i-heroicons-sparkles" class="text-yellow-300 text-lg animate-pulse" />
+        </div>
+      </div>
+      
+      <!-- Mobile Layout -->
+      <div class="flex sm:hidden flex-col items-center text-center gap-2">
+        <div class="flex items-center gap-1">
+          <UIcon name="i-heroicons-sparkles" class="text-yellow-300 text-sm animate-pulse" />
+          <span class="font-medium text-xs">
+            🎄 Sesje świąteczne!
+          </span>
+          <UIcon name="i-heroicons-sparkles" class="text-yellow-300 text-sm animate-pulse" />
+        </div>
+        <a 
+          href="https://niebieskie-aparaty.pl" 
+          target="_blank"
+          class="bg-white text-red-700 px-2 py-1 rounded-full text-xs font-semibold hover:bg-red-50 transition-colors duration-300 shadow-sm"
+        >
+          Sprawdź
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <nav class="fixed top-[52px] w-full bg-white bg-opacity-95 shadow-sm z-40">
     <div class="container mx-auto px-4 lg:px-8">
       <div class="flex justify-between items-center h-[76px]">
         <!-- Brand/Logo -->

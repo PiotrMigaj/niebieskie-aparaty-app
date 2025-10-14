@@ -11,6 +11,12 @@ export const useAuth = () => {
         body: { credentials: encoded },
       });
       await refreshSession();
+      
+      // Set flag for Christmas popup
+      if (process.client) {
+        localStorage.setItem('showChristmasPopup', 'true');
+      }
+      
       await navigateTo("/");
     } catch (error) {
       if (!toast.toasts.value.some((t) => t.id === "login-toast-id")) {
