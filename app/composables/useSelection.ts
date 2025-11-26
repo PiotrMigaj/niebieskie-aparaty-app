@@ -1,4 +1,4 @@
-import type { Selection, SelectionItem } from "~~/shared/types/selection.types";
+import type { Selection, SelectionItem, SelectionSubmitPayload, SelectionSavePayload } from "~~/shared/types/selection.types";
 
 export default function useSelection() {
   const toast = useToast();
@@ -36,6 +36,10 @@ export default function useSelection() {
   const selectedImageIndex = ref<number | null>(null);
   const isDownloading = ref(false);
   const loadedImages = ref<Record<string, boolean>>({});
+
+  // Submission state
+  const isSubmitting = ref(false);
+  const isSaving = ref(false);
 
   function openImage(index: number) {
     selectedImageIndex.value = index;
@@ -170,6 +174,91 @@ export default function useSelection() {
     }
   }
 
+  // Submission functions
+  function shouldShowConfirmationModal() {
+    if (!selection.value) return false;
+    const picked = selectedImages.value.length;
+    const limit = selection.value.maxNumberOfPhotos;
+    return picked < limit;
+  }
+
+  function getConfirmationModalProps() {
+    if (!selection.value) return null;
+    return {
+      selectedCount: selectedImages.value.length,
+      packageLimit: selection.value.maxNumberOfPhotos
+    };
+  }
+
+  async function submitSelection() {
+    if (!selection.value) return;
+
+    isSubmitting.value = true;
+    const payload: SelectionSubmitPayload = {
+      selectionId: selection.value.selectionId,
+      eventId: selection.value.eventId,
+      eventTitle: selection.value.eventTitle,
+      selectedImages: selectedImages.value,
+    };
+    
+    try {
+      await $fetch('/api/selections/submitSelection', {
+        method: "POST" as any,
+        body: payload,
+      });
+      await fetchSelection(selection.value.eventId);
+      toast.add({
+        title: 'Wybór przesłany',
+        description: 'Twój wybór został przesłany do fotografa.',
+        color: 'success',
+        icon: 'i-heroicons-check-circle',
+      });
+    } catch (e) {
+      toast.add({
+        title: 'Błąd',
+        description: 'Nie udało się przesłać wyboru.',
+        color: 'error',
+        icon: 'i-heroicons-x-circle',
+      });
+    } finally {
+      isSubmitting.value = false;
+    }
+  }
+
+  async function handleSaveSelection() {
+    if (!selection.value) return;
+    
+    isSaving.value = true;
+    const payload: SelectionSavePayload = {
+      selectionId: selection.value.selectionId,
+      eventId: selection.value.eventId,
+      eventTitle: selection.value.eventTitle,
+      selectedImages: selectedImages.value,
+    };
+    
+    try {
+      await $fetch('/api/selections/saveSelection', {
+        method: "POST" as any,
+        body: payload,
+      });
+      toast.add({
+        title: 'Wybór zapisany',
+        description: 'Twój wybór został zapisany.',
+        color: 'success',
+        icon: 'i-heroicons-check-circle',
+      });
+    } catch (e) {
+      toast.add({
+        title: 'Błąd',
+        description: 'Nie udało się zapisać wyboru.',
+        color: 'error',
+        icon: 'i-heroicons-x-circle',
+      });
+    } finally {
+      isSaving.value = false;
+    }
+  }
+
   return {
     filteredSelectedItems,
     fetchSelectionWithItems,
@@ -189,6 +278,14 @@ export default function useSelection() {
     loadedImages,
     setImageLoaded,
     handleKeydown,
+    // submission functions and state
+    isSubmitting,
+    isSaving,
+    shouldShowConfirmationModal,
+    getConfirmationModalProps,
+    submitSelection,
+    handleSaveSelection,
+    // data
     selection,
     selectedImages,
     selectedImagesSorted,

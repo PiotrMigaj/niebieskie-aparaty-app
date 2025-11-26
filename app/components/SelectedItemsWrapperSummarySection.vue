@@ -15,16 +15,28 @@
             <UBadge :label="selection.maxNumberOfPhotos.toString()" color="primary" variant="solid" size="lg" />
           </div>
         </div>
-        <UButton
-          @click="handleSubmitSelection"
-          color="primary"
-          size="lg"
-          icon="i-heroicons-paper-airplane"
-          :loading="isSubmitting"
-          :disabled="selection.blocked || selectedImages.length === 0"
-        >
-          Prześlij wybór do fotografa
-        </UButton>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <UButton
+            @click="handleSaveSelection"
+            color="primary"
+            size="lg"
+            icon="i-heroicons-bookmark"
+            :loading="isSaving"
+            :disabled="selection.blocked || selectedImages.length === 0"
+          >
+            Zapisz wybór
+          </UButton>
+          <UButton
+            @click="handleSubmitSelection"
+            color="primary"
+            size="lg"
+            icon="i-heroicons-paper-airplane"
+            :loading="isSubmitting"
+            :disabled="selection.blocked || selectedImages.length === 0"
+          >
+            Prześlij wybór do fotografa
+          </UButton>
+        </div>
       </div>
       <!-- Selected images list -->
       <div class="mt-6">
@@ -52,11 +64,14 @@
     selectedImages: string[]
     selectedImagesSorted: string[]
     isSubmitting?: boolean
+    isSaving?: boolean
     handleSubmitSelection: () => void
+    handleSaveSelection: () => void
   }
   
   const props = withDefaults(defineProps<Props>(), {
     isSubmitting: false,
+    isSaving: false,
   })
  
   </script>
