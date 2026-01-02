@@ -13,6 +13,12 @@ export interface SelectionRepository {
     username: string,
     selectedImages: string[]
   ): Promise<void>;
+
+  saveSelection(
+    selectionId: string,
+    username: string,
+    selectedImages: string[]
+  ): Promise<void>;
 }
 
 class SelectionRepositoryImpl implements SelectionRepository {
@@ -66,6 +72,52 @@ class SelectionRepositoryImpl implements SelectionRepository {
         );
       }
       console.error("Error updating selection:", error);
+      throw error;
+    }
+  }
+
+  async saveSelection(
+    selectionId: string,
+    username: string,
+    selectedImages: string[]
+  ): Promise<void> {
+    try {
+      const selectedNumberOfPhotos = selectedImages.length;
+      const updatedAt = new Date().toISOString();
+
+      const command = new UpdateCommand({
+        TableName: this.tableName,
+        Key: {
+          selectionId,
+        },
+        // Set the fields you want to update (without blocking):
+        UpdateExpression: `
+          SET 
+            selectedImages = :selectedImages, 
+            selectedNumberOfPhotos = :selectedNumberOfPhotos, 
+            updatedAt = :updatedAt
+        `,
+        // Condition ensures the username matches:
+        ConditionExpression: "username = :username",
+        ExpressionAttributeValues: {
+          ":selectedImages": selectedImages,
+          ":selectedNumberOfPhotos": selectedNumberOfPhotos,
+          ":updatedAt": updatedAt,
+          ":username": username,
+        },
+      });
+
+      await this.docClient.send(command);
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.name === "ConditionalCheckFailedException"
+      ) {
+        throw new Error(
+          `Selection not found for given selectionId and username`
+        );
+      }
+      console.error("Error saving selection:", error);
       throw error;
     }
   }

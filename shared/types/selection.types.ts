@@ -24,9 +24,14 @@ export interface SelectionItem {
     eventTitle: string;
 }
 
-export interface SelectionSubmitPayload {
+interface SelectionBasePayload {
   selectionId: string;
   eventId: string;
   eventTitle: string;
   selectedImages: string[];
 }
+
+export interface SelectionSubmitPayload extends SelectionBasePayload {}
+
+export interface SelectionSavePayload extends SelectionBasePayload {}
+

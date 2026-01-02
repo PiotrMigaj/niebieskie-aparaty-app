@@ -29,3 +29,8 @@ server/api/events/\[eventId]/gallery/.nfs.2005102b.307c
 server/api/selections/\[selectionId]/items/.nfs.2005102c.307c
 server/utils/.nfs.2005102d.307c
 .nfs.2005102a.307c
+app/composables/.nfs.2005102d.793c
+app/composables/.nfs.20051028.501c
+server/api/selections/.nfs.2005102c.793c
+server/repository/.nfs.2005102e.793c
+shared/types/.nfs.2005102f.793c

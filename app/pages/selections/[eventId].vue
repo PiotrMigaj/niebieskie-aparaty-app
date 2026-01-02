@@ -23,6 +23,7 @@
       <ul class="list-disc list-inside space-y-2">
         <li>Na dole strony znajduje się podsumowanie z informacją, ile zdjęć zostało wybranych oraz ile obejmuje pakiet.
         </li>
+        <li>Przycisk <strong>„Zapisz wybór"</strong> — zapisuje bieżący wybór bez blokowania możliwości dalszych zmian.</li>
         <li>Po kliknięciu przycisku <strong>„Prześlij wybór do fotografa"</strong>:
           <ul class="list-disc list-inside ml-5 mt-1 space-y-1">
             <li>możliwość ponownego wysłania selekcji zostanie zablokowana,</li>
@@ -59,7 +60,7 @@
     <!-- Summary Section -->
     <SelectedItemsWrapperSummarySection v-if="!loading && selection && !selection.blocked" :selection="selection"
       :selectedImages="selectedImages" :selectedImagesSorted="selectedImagesSorted" :isSubmitting="isSubmitting"
-      :handleSubmitSelection="handleSubmitSelection" />
+      :isSaving="isSaving" :handleSubmitSelection="handleSubmitSelection" :handleSaveSelection="handleSaveSelection" />
 
     <!-- Thank you summary for blocked selection -->
     <SelectedItemsWrapperThankYouSection
@@ -90,6 +91,12 @@ const {
   loadedImages,
   setImageLoaded,
   handleKeydown,
+  isSubmitting,
+  isSaving,
+  shouldShowConfirmationModal,
+  getConfirmationModalProps,
+  submitSelection,
+  handleSaveSelection,
   selection,
   selectedImages,
   selectedImagesSorted,
@@ -98,10 +105,6 @@ const {
 } = useSelection();
 
 const loading = ref<boolean>(true);
-const isSubmitting = ref<boolean>(false);
-const showConfirmationModal = ref<boolean>(false);
-
-const toast = useToast();
 
 // Mobile detection
 const isMobile = computed(() => {
@@ -184,64 +187,24 @@ onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown);
 });
 
-const overlay = useOverlay()
+const overlay = useOverlay();
 
 async function handleSubmitSelection() {
   if (!selection.value) return;
 
-  const picked = selectedImages.value.length;
-  const limit = selection.value.maxNumberOfPhotos;
-
   // Show modal only if user picked fewer than allowed
-  if (picked < limit) {
+  if (shouldShowConfirmationModal()) {
     const modal = overlay.create(ConfirmationModal, {
-      props: {
-        selectedCount: picked,
-        packageLimit: limit
-      }
-    })
+      props: getConfirmationModalProps()
+    });
 
-    const confirmed = await modal.open() // Await result directly
+    const confirmed = await modal.open();
 
     if (confirmed) {
-      submitSelection()
+      submitSelection();
     }
   } else {
-    submitSelection()
-  }
-}
-
-async function submitSelection() {
-  if (!selection.value) return;
-
-  isSubmitting.value = true;
-  const payload: SelectionSubmitPayload = {
-    selectionId: selection.value.selectionId,
-    eventId: selection.value.eventId,
-    eventTitle: selection.value.eventTitle,
-    selectedImages: selectedImages.value,
-  };
-  try {
-    await $fetch('/api/selections/submitSelection', {
-      method: "POST" as any,
-      body: payload,
-    });
-    await fetchSelection(route.params.eventId as string);
-    toast.add({
-      title: 'Wybór przesłany',
-      description: 'Twój wybór został przesłany do fotografa.',
-      color: 'success',
-      icon: 'i-heroicons-check-circle',
-    });
-  } catch (e) {
-    toast.add({
-      title: 'Błąd',
-      description: 'Nie udało się przesłać wyboru.',
-      color: 'error',
-      icon: 'i-heroicons-x-circle',
-    });
-  } finally {
-    isSubmitting.value = false;
+    submitSelection();
   }
 }
 </script>
