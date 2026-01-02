@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: migi987/app-niebieskie-aparaty:12.0-christmas
+    image: migi987/app-niebieskie-aparaty:13.0
     ports:
       - "3333:3333"
     # deploy:

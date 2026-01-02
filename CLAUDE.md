@@ -32,6 +32,7 @@ This is a Nuxt 3 full-stack photography gallery application called "Niebieskie A
 - **Authentication**: Basic username/password auth with bcrypt
 - **File Management**: S3 integration with presigned URLs
 - **Email Notifications**: Automated selection confirmations via SES
+- **Seasonal Marketing** (Currently Disabled): Christmas advertising components
 
 ### Project Structure
 
@@ -89,3 +90,32 @@ This is a Nuxt 3 full-stack photography gallery application called "Niebieskie A
 - Composables for reactive state management
 - Type-safe API endpoints with shared TypeScript interfaces
 - Error handling with toast notifications
+
+### Seasonal Marketing Features
+
+The application includes Christmas/holiday advertising components that are currently **commented out** but preserved for future use.
+
+#### Components
+- **ChristmasPopup** (`app/components/ChristmasPopup.vue`): Modal popup promoting Christmas photo sessions
+- **Christmas Banner** (in `app/components/Navbar.vue`): Top banner with holiday messaging
+
+#### How to Re-enable for Next Season
+
+1. **Navbar Banner** (`app/components/Navbar.vue`):
+   - Uncomment lines 3-41 (the Christmas banner HTML)
+   - Update navbar position from `top-0` back to `top-[52px]`
+
+2. **Popup Component** (`app/layouts/default.vue`):
+   - Uncomment line 8: `<ChristmasPopup ref="christmasPopup" @close="handlePopupClose" />`
+   - Uncomment lines 14-36 (the popup logic in script setup)
+
+3. **Login Trigger** (`app/composables/useAuth.ts`):
+   - Uncomment lines 16-20 (localStorage flag that triggers popup after login)
+
+All commented sections are marked with `COMMENTED OUT FOR NEXT YEAR` for easy searching.
+
+#### How It Works
+- Christmas banner displays at top of navbar on all pages
+- Popup appears once after user login (controlled via localStorage)
+- Users can dismiss popup, and it won't show again (persisted in localStorage)
+- Banner links to main photography website for booking sessions

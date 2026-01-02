@@ -4,11 +4,14 @@
         <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-25">
             <slot />
         </main>
-        <ChristmasPopup ref="christmasPopup" @close="handlePopupClose" />
+        <!-- Christmas Popup - COMMENTED OUT FOR NEXT YEAR -->
+        <!-- <ChristmasPopup ref="christmasPopup" @close="handlePopupClose" /> -->
     </div>
 </template>
 
 <script setup>
+// Christmas popup logic - COMMENTED OUT FOR NEXT YEAR
+/*
 const christmasPopup = ref(null)
 
 onMounted(() => {
@@ -30,4 +33,5 @@ const handlePopupClose = () => {
     localStorage.setItem('showChristmasPopup', 'false')
   }
 }
+*/
 </script>
