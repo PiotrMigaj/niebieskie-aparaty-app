@@ -90,7 +90,7 @@ export default function useSelection() {
   });
 
   function restoreSelectedImagesFromSelection(selection: Selection) {
-    if (!selection.blocked && selection.selectedImages && selection.selectedImages.length > 0) {
+    if (!selection.blocked && selection.selectedImages) {
       selectedImages.value = [...selection.selectedImages];
     }
   }
@@ -107,6 +107,7 @@ export default function useSelection() {
   }
 
   async function fetchSelectionWithItems(eventId: string) {
+    selectedImages.value = [];
     try {
       const fetchedSelection = await $fetch<Selection>(
         `/api/selections/${eventId}`
