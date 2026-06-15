@@ -4,11 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Development Commands
 
-- **Development server**: `npm run dev` - Starts Nuxt dev server on http://localhost:3000
-- **Build**: `npm run build` - Builds the application for production
-- **Preview**: `npm run preview` - Locally preview production build
-- **Generate**: `npm run generate` - Generate static site
-- **Prepare**: `npm run postinstall` or `nuxt prepare` - Prepare project (auto-runs after install)
+This project uses **pnpm** as the package manager.
+
+- **Install dependencies**: `pnpm install`
+- **Development server**: `pnpm dev` - Starts Nuxt dev server on http://localhost:3333
+- **Build**: `pnpm build` - Builds the application for production
+- **Preview**: `pnpm preview` - Locally preview production build
+- **Generate**: `pnpm generate` - Generate static site
+- **Prepare**: `pnpm postinstall` or `nuxt prepare` - Prepare project (auto-runs after install)
 
 ## Architecture Overview
 
@@ -42,7 +45,7 @@ This is a Nuxt 3 full-stack photography gallery application called "Niebieskie A
 - `pages/`: File-based routing with nested routes for events and galleries
 - `layouts/`: Layout templates (default, gallery, login)
 - `middleware/`: Route guards (authenticated.ts)
-- `plugins/`: Client-side plugins for third-party libraries
+- `plugins/`: Client-side plugins. Globally register `MasonryWall` (from `@yeger/vue-masonry-wall`) and `RecycleScroller`/`DynamicScroller`/`DynamicScrollerItem` (from `vue-virtual-scroller`) — used in templates without imports. **`vue-virtual-scroller/dist/vue-virtual-scroller.css` must be imported in the plugin** — without it, scroller items escape to the viewport.
 
 #### Backend (`server/`)
 - `api/`: API endpoints following RESTful patterns
@@ -74,9 +77,9 @@ This is a Nuxt 3 full-stack photography gallery application called "Niebieskie A
 - Download functionality via presigned URLs
 
 ### Performance Optimizations
-- Virtual scrolling for large image galleries (2000+ images)
+- Virtual scrolling for large image galleries via `DynamicScroller` with `page-mode` (uses window scroll, no inner scrollbar) wrapping chunks of images, each rendered as a `MasonryWall`. Chunks carry an `offset` so click/load handlers can map back to the flat index.
 - Image lazy loading with placeholder animations
-- Chunked data loading (2000 images per chunk)
+- Chunked rendering (~200 images per chunk) so only nearby chunks instantiate their `MasonryWall`
 - Masonry layout with responsive columns
 
 ### Environment Variables Required

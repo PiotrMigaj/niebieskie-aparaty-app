@@ -1,6 +1,6 @@
 <template>
   <div class="container mx-auto p-4">
-    <MasonryWall ref="masonryRef" :items="images" :columns="{ default: 1, 768: 2, 1024: 3 }" :gap="6">
+    <MasonryWall ref="masonryRef" :items="images" :column-width="340" :min-columns="1" :max-columns="3" :gap="6">
       <template #default="{ item, index }">
         <div class="relative overflow-hidden cursor-pointer group">
           <div class="overflow-hidden shadow-md flex justify-center"

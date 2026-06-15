@@ -3,20 +3,21 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Install dependencies
-COPY package*.json ./
+# Enable pnpm via corepack
+RUN corepack enable
 
-RUN npm update -g npm 
+# Install dependencies
+COPY package.json pnpm-lock.yaml ./
 
 # ENV NODE_ENV=production
 
-RUN npm ci --omit=dev
+RUN pnpm install --frozen-lockfile --prod=false
 
 # Copy project files
 COPY . .
 
 # Build the application
-RUN npm run build
+RUN pnpm run build
 
 # Stage 2: Runtime
 FROM node:20-alpine
@@ -29,11 +30,11 @@ RUN addgroup -S appgroup && adduser -S -G appgroup appuser
 # Copy only the necessary files from the build stage
 COPY --from=builder /app/.output /app/.output
 
-#Set a volume to persist servers.json data 
+#Set a volume to persist servers.json data
 # VOLUME /app/.output/server/data
 
 # Set the appropriate permissions for the app directory
-RUN chown -R appuser:appgroup /app  
+RUN chown -R appuser:appgroup /app
 
 # Switch to the non-root user
 USER appuser
