@@ -42,8 +42,6 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// Computed property for better performance and readability
-const sortedImages = computed(() => {
-  return [...props.selectedImages].sort((a, b) => a.localeCompare(b))
-})
+// Already sorted upstream (display names from useSelection)
+const sortedImages = computed(() => props.selectedImages)
 </script>

@@ -65,7 +65,7 @@
     <!-- Thank you summary for blocked selection -->
     <SelectedItemsWrapperThankYouSection
       v-if="!loading && selection && selection.blocked"
-      :selection="selection" :selectedImages="selection.selectedImages" />
+      :selection="selection" :selectedImages="selectedImagesSorted" />
   </div>
 </template>
 

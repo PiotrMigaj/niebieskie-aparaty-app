@@ -1,6 +1,7 @@
 import { GetCommand } from "@aws-sdk/lib-dynamodb";
 import type { UserDto } from "../../shared/types/user.types";
 import { getDynamoClient } from "../config/db";
+import { TABLE_NAME, userPk, profileSk } from "../utils/keys";
 
 export interface UserRepository {
   getUserByUsername(username: string): Promise<UserDto | null>;
@@ -8,7 +9,6 @@ export interface UserRepository {
 
 class UserRepositoryImpl implements UserRepository {
   private readonly docClient;
-  private readonly tableName: string = "Users";
 
   constructor() {
     this.docClient = getDynamoClient();
@@ -17,8 +17,8 @@ class UserRepositoryImpl implements UserRepository {
   async getUserByUsername(username: string): Promise<UserDto | null> {
     try {
       const command = new GetCommand({
-        TableName: this.tableName,
-        Key: { username },
+        TableName: TABLE_NAME,
+        Key: { PK: userPk(username), SK: profileSk() },
       });
 
       const { Item } = await this.docClient.send(command);
@@ -28,9 +28,7 @@ class UserRepositoryImpl implements UserRepository {
         return null;
       }
 
-      return {
-        fullName: Item.fullName,
-      } as UserDto;
+      return { fullName: Item.fullName } as UserDto;
     } catch (error) {
       console.error("Error fetching user:", error);
       return null;

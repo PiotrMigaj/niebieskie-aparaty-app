@@ -1,20 +1,34 @@
-import { FileRepository, FileRepositoryFactory } from "../repository/fileRepository";
+import type { AuthUser } from "../../shared/types/auth.types";
+import { FileRepositoryFactory } from "../repository/fileRepository";
 import { isUserAuthenticated } from "../service/authService";
+import { generatePresignedUrlForFile } from "../utils/generatePresignedUrl";
 
 export default defineEventHandler(async (event) => {
-  await isUserAuthenticated(event);
+  const authUser: AuthUser | undefined = await isUserAuthenticated(event);
+  if (!authUser) {
+    throw createError({ statusCode: 401, message: "Bad credentials" });
+  }
   try {
-    const { fileId } = await readBody(event);
-    if (!fileId) {
+    const { eventId, fileId } = await readBody(event);
+    if (!eventId || !fileId) {
       throw createError({
         statusCode: 400,
-        message: "Missing fileId",
+        message: "Missing eventId or fileId",
       });
     }
-    const presignedUrl: string = await generatePresignedUrlForFileId(fileId);
 
-    const fileRepository: FileRepository = FileRepositoryFactory.getInstance();
-    await fileRepository.updateDownloadDate(fileId);
+    const presignedUrl = await generatePresignedUrlForFile(
+      authUser.username,
+      eventId,
+      fileId
+    );
+
+    const fileRepository = FileRepositoryFactory.getInstance();
+    await fileRepository.updateDownloadDate(
+      authUser.username,
+      eventId,
+      fileId
+    );
 
     return presignedUrl;
   } catch (err) {

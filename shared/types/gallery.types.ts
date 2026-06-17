@@ -1,26 +1,14 @@
-export interface GalleryImage {
-  key: string;
-  fileName: string;
-  contentType: string;
-  size: number;
+export type GalleryItemStatus = "processed" | "failed" | string;
+
+export interface GalleryItem {
+  imageName: string;
+  originalFileName: string;
+  webpUrl: string;
+  originalUrl: string;
   width: number;
   height: number;
-  url?: string;
+  compressedSize: number;
+  status: GalleryItemStatus;
+  failureReason: string | null;
+  processedAt: string | null;
 }
-
-export interface GalleryImageWithThumbnail extends GalleryImage {
-  itemImageSrc: string;
-  thumbnailImageSrc: string;
-  alt: string;
-}
-
-export interface GalleryDto {
-  galleryId: string;
-  createdAt: string;
-  title: string;
-  description: string;
-  urlsSigningDate: string;
-  username: string;
-  images: GalleryImage[];
-}
-

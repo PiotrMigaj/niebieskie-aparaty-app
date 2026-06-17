@@ -9,18 +9,13 @@ export const useEvents = () => {
   const toast = useToast();
 
   const fetchFullName = async () => {
-    const userDto = await $fetch("/api/fullName", {
-      method: "GET",
-    });
+    const userDto = await $fetch("/api/fullName", { method: "GET" });
     fullName.value = userDto.fullName || "";
   };
 
   const fetchEvents = async () => {
-    const result = (await $fetch<EventDto[]>("/api/events", {
-      method: "GET",
-    }));
+    const result = await $fetch<EventDto[]>("/api/events", { method: "GET" });
 
-    // Sort the events by date, then createdAt
     result.sort((a, b) => {
       const dateCompare =
         new Date(b.date).getTime() - new Date(a.date).getTime();
@@ -28,13 +23,11 @@ export const useEvents = () => {
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
 
-    // Sort files inside each event
     result.forEach((event) => {
-      event.files.sort((a, b) => {
-        return (
+      event.files.sort(
+        (a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-      });
+      );
     });
 
     events.value = result;
@@ -56,10 +49,9 @@ export const useEvents = () => {
     try {
       const presignedUrl = await $fetch("/api/downloadFileWithPresignedUrl", {
         method: "POST",
-        body: { fileId: file.fileId },
+        body: { eventId: file.eventId, fileId: file.fileId },
       });
 
-      // Update dateOfLastDownload reactively
       const updatedDate = new Date().toISOString();
       const event = events.value.find((e) =>
         e.files.some((f) => f.fileId === file.fileId)
@@ -71,7 +63,6 @@ export const useEvents = () => {
         }
       }
 
-      // Start download
       const link = document.createElement("a");
       link.href = presignedUrl;
       link.download = `${file.fileId}.zip`;
@@ -98,11 +89,10 @@ export const useEvents = () => {
       return "/placeholder.png";
     }
     try {
-      const url = await $fetch<string>("/api/createPresignedUrl", {
+      return await $fetch<string>("/api/createPresignedUrl", {
         method: "POST",
         body: { objectKey },
       });
-      return url;
     } catch (err) {
       console.error("Could not generate presigned URL for image placeholder");
       return "/placeholder.png";

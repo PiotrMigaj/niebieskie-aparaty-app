@@ -1,14 +1,33 @@
-import { ScanCommand } from "@aws-sdk/lib-dynamodb";
+import { GetCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import type { EventDto } from "../../shared/types/event.types";
 import { getDynamoClient } from "../config/db";
+import {
+  TABLE_NAME,
+  eventSk,
+  eventSkPrefix,
+  userPk,
+} from "../utils/keys";
 
 export interface EventRepository {
   getEventsByUsername(username: string): Promise<EventDto[]>;
+  getEventById(username: string, eventId: string): Promise<EventDto | null>;
 }
+
+const mapEvent = (item: Record<string, any>): EventDto => ({
+  eventId: item.eventId,
+  createdAt: item.createdAt,
+  date: item.date,
+  description: item.description ?? "",
+  imagePlaceholderObjectKey: item.imagePlaceholderObjectKey ?? null,
+  title: item.title,
+  username: item.username,
+  galleryAvailable: !!item.galleryAvailable,
+  selectionAvailable: !!item.selectionAvailable,
+  files: [],
+});
 
 class EventRepositoryImpl implements EventRepository {
   private readonly docClient;
-  private readonly tableName: string = "Events";
 
   constructor() {
     this.docClient = getDynamoClient();
@@ -16,11 +35,12 @@ class EventRepositoryImpl implements EventRepository {
 
   async getEventsByUsername(username: string): Promise<EventDto[]> {
     try {
-      const command = new ScanCommand({
-        TableName: this.tableName,
-        FilterExpression: "username = :username",
+      const command = new QueryCommand({
+        TableName: TABLE_NAME,
+        KeyConditionExpression: "PK = :pk AND begins_with(SK, :prefix)",
         ExpressionAttributeValues: {
-          ":username": username,
+          ":pk": userPk(username),
+          ":prefix": eventSkPrefix(),
         },
       });
 
@@ -31,10 +51,27 @@ class EventRepositoryImpl implements EventRepository {
         return [];
       }
 
-      return Items as EventDto[];
+      return Items.map(mapEvent);
     } catch (error) {
       console.error("Error fetching events:", error);
       return [];
+    }
+  }
+
+  async getEventById(
+    username: string,
+    eventId: string
+  ): Promise<EventDto | null> {
+    try {
+      const command = new GetCommand({
+        TableName: TABLE_NAME,
+        Key: { PK: userPk(username), SK: eventSk(eventId) },
+      });
+      const { Item } = await this.docClient.send(command);
+      return Item ? mapEvent(Item) : null;
+    } catch (error) {
+      console.error("Error fetching event:", error);
+      return null;
     }
   }
 }

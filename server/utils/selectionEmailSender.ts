@@ -1,6 +1,7 @@
 import { SendEmailCommand } from "@aws-sdk/client-ses";
 import type { SelectionSubmitPayload } from "~~/shared/types/selection.types";
 import { getSESClient } from "../config/ses";
+import { toDisplayName } from "~~/shared/utils/imageName";
 
 export const sendSelectionEmail = async (
   username: string,
@@ -11,8 +12,9 @@ export const sendSelectionEmail = async (
   const now = new Date();
   const localDateTime = now.toLocaleString();
 
-  // Sort the images
-  const sortedImages = [...selection.selectedImages].sort();
+  const sortedImages = [...selection.selectedImages]
+    .map(toDisplayName)
+    .sort((a, b) => a.localeCompare(b));
 
   const htmlBody = `
     <!DOCTYPE html>

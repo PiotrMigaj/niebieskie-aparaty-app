@@ -1,8 +1,8 @@
-import { getRequestURL, H3Event, sendRedirect, use } from "h3";
+import { getRequestURL, H3Event, sendRedirect } from "h3";
 import { GetCommand } from "@aws-sdk/lib-dynamodb";
 import { getDynamoClient } from "../config/db";
-import bcrypt from "bcrypt";
 import type { AuthUser, AuthRequest } from "../../shared/types/auth.types";
+import { TABLE_NAME, userPk, profileSk } from "../utils/keys";
 
 export const isUserAuthenticated = async (
   event: H3Event
@@ -11,8 +11,8 @@ export const isUserAuthenticated = async (
     const { user } = await requireUserSession(event);
     const authUser = user as AuthUser;
     const authService = AuthService.getInstance();
-    const isUserAcive = await authService.isActiveByUsername(authUser.username);
-    if (!isUserAcive) {
+    const isUserActive = await authService.isActiveByUsername(authUser.username);
+    if (!isUserActive) {
       console.error("User with username is not active: " + authUser.username);
       throw createError({
         statusCode: 401,
@@ -32,7 +32,6 @@ export class AuthService {
   private static instance: AuthService;
 
   private readonly docClient;
-  private readonly tableName: string = "Users";
 
   constructor() {
     this.docClient = getDynamoClient();
@@ -55,8 +54,8 @@ export class AuthService {
       const { username, password } = request;
 
       const command = new GetCommand({
-        TableName: this.tableName,
-        Key: { username },
+        TableName: TABLE_NAME,
+        Key: { PK: userPk(username), SK: profileSk() },
       });
 
       const { Item } = await this.docClient.send(command);
@@ -71,7 +70,7 @@ export class AuthService {
         return null;
       }
 
-      const passwordMatch = await bcrypt.compare(password, Item.password);
+      const passwordMatch = await verifyPassword(Item.password, password);
 
       if (!passwordMatch) {
         console.log("Invalid password");
@@ -89,8 +88,8 @@ export class AuthService {
   public async isActiveByUsername(username: string): Promise<boolean> {
     try {
       const command = new GetCommand({
-        TableName: this.tableName,
-        Key: { username },
+        TableName: TABLE_NAME,
+        Key: { PK: userPk(username), SK: profileSk() },
         ProjectionExpression: "active",
       });
 

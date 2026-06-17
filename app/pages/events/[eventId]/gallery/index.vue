@@ -15,19 +15,19 @@
               <template #default="{ item, index }: { item: any, index: number }">
                 <div class="relative overflow-hidden cursor-pointer group">
                   <div class="overflow-hidden shadow-md flex justify-center"
-                    :style="{ aspectRatio: `${item.compressedFileWidth} / ${item.compressedFileHeight}` }"
+                    :style="{ aspectRatio: `${item.width} / ${item.height}` }"
                     @click="openImage(chunk.offset + index)">
                     <div class="relative w-full h-full">
                       <div v-if="!loadedImages[chunk.offset + index]"
                         class="absolute inset-0 bg-gray-300 animate-pulse z-0"></div>
-                      <NuxtImg :src="item.thumbnailImageSrc" :alt="item.alt"
+                      <NuxtImg :src="item.webpUrl" :alt="item.alt"
                         class="w-full h-auto object-cover z-10 transition-opacity duration-500"
                         :class="{ 'opacity-0': !loadedImages[chunk.offset + index], 'opacity-100': loadedImages[chunk.offset + index] }"
                         @load="loadedImages[chunk.offset + index] = true" loading="lazy" />
                     </div>
                   </div>
                   <!-- Download button overlay -->
-                  <button @click.stop="downloadImage(item.originalFilePresignedUrl)"
+                  <button @click.stop="downloadImage(route.params.eventId as string, item.imageName)"
                     class="absolute top-4 right-4 bg-white/90 hover:bg-white w-10 h-10 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center">
                     <UIcon v-if="!isDownloading" name="i-heroicons-arrow-down-tray" class="w-5 h-5 text-gray-700" />
                     <UIcon v-else name="i-heroicons-arrow-path" class="w-5 h-5 text-gray-700 animate-spin" />
@@ -40,11 +40,6 @@
       </DynamicScroller>
     </ClientOnly>
 
-
-
-
-
-
     <!-- Modal -->
     <div v-if="selectedImage !== null"
       class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
@@ -55,7 +50,7 @@
         </button>
 
         <!-- Download button - now outside image -->
-        <button @click="downloadImage(images[selectedImage]?.originalFilePresignedUrl)"
+        <button @click="images[selectedImage] && downloadImage(route.params.eventId as string, images[selectedImage]!.imageName)"
           class="absolute -top-12 right-12 bg-white/90 hover:bg-white w-10 h-10 rounded-full shadow-lg transition-all duration-200 flex items-center justify-center">
           <UIcon v-if="!isDownloading" name="i-heroicons-arrow-down-tray" class="w-5 h-5 text-gray-700" />
           <UIcon v-else name="i-heroicons-arrow-path" class="w-5 h-5 text-gray-700 animate-spin" />
@@ -68,7 +63,7 @@
           </button>
 
           <div class="relative flex justify-center">
-            <img v-if="images[selectedImage]" :src="images[selectedImage]?.itemImageSrc"
+            <img v-if="images[selectedImage]" :src="images[selectedImage]?.webpUrl"
               :alt="images[selectedImage]?.alt" class="max-w-full max-h-[70vh] md:max-h-[85vh] object-contain" />
           </div>
 
@@ -95,8 +90,6 @@
 </template>
 
 <script setup lang="ts">
-import { tr } from 'date-fns/locale';
-
 definePageMeta({
   middleware: ["authenticated"],
   layout: "gallery",

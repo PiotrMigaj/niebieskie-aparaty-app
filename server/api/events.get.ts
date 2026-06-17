@@ -1,48 +1,36 @@
 import type { AuthUser } from "../../shared/types/auth.types";
 import type { EventDto } from "../../shared/types/event.types";
-import type { FileDto } from "../../shared/types/file.types";
-import { EventRepository, EventRepositoryFactory } from "../repository/eventRepository";
+import { EventRepositoryFactory } from "../repository/eventRepository";
 import { FileRepositoryFactory } from "../repository/fileRepository";
 import { isUserAuthenticated } from "../service/authService";
 
 export default defineEventHandler(async (event) => {
   const authUser: AuthUser | undefined = await isUserAuthenticated(event);
-  if (authUser) {
-    try {
-      const username = authUser.username;
-      const eventRepository: EventRepository =
-        EventRepositoryFactory.getInstance();
-      const events = await eventRepository.getEventsByUsername(username);
-      const eventsWithFiles = await fetchFilesForEvents(
-        authUser.username,
-        events
-      );
-      return eventsWithFiles;
-    } catch (err) {
-      console.error("Error during fetching");
-      throw err;
-    }
-  } else {
+  if (!authUser) {
     console.error("AuthUser from session is undefined during fetching events");
-    throw createError({
-      statusCode: 401,
-      message: "Bad credentials",
-    });
+    throw createError({ statusCode: 401, message: "Bad credentials" });
+  }
+
+  try {
+    const username = authUser.username;
+    const eventRepository = EventRepositoryFactory.getInstance();
+    const events = await eventRepository.getEventsByUsername(username);
+    return await fetchFilesForEvents(username, events);
+  } catch (err) {
+    console.error("Error during fetching events:", err);
+    throw err;
   }
 });
 
-const fetchFilesForEvents = async (username: string, events: EventDto[]) => {
-  const filesRepository = FileRepositoryFactory.getInstance();
-  const eventsWithFiles = await Promise.all(
-    events.map(async (event) => {
-      const files: FileDto[] =
-        await filesRepository.getFilesForUsernameAndEventId(
-          username,
-          event.eventId
-        );
-      event.files = files;
-      return event;
+const fetchFilesForEvents = async (
+  username: string,
+  events: EventDto[]
+): Promise<EventDto[]> => {
+  const fileRepository = FileRepositoryFactory.getInstance();
+  return Promise.all(
+    events.map(async (e) => {
+      e.files = await fileRepository.getFilesByEventId(username, e.eventId);
+      return e;
     })
   );
-  return eventsWithFiles;
 };

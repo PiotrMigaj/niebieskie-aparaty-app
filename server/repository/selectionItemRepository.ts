@@ -1,50 +1,107 @@
-import { ScanCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import { GetCommand, QueryCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import type { SelectionItem } from "../../shared/types/selection.types";
 import { getDynamoClient } from "../config/db";
+import {
+  TABLE_NAME,
+  selectionItemSk,
+  selectionItemSkPrefix,
+  userPk,
+} from "../utils/keys";
+
+export interface SelectionItemDownloadRef {
+  objectKey: string;
+  imageName: string;
+}
 
 export interface SelectionItemRepository {
-  getItemsBySelectionIdAndUsername(
-    selectionId: string,
-    username: string
+  getItemsByEventId(
+    username: string,
+    eventId: string
   ): Promise<SelectionItem[]>;
 
-  submitSelection(
+  setSelected(
+    username: string,
+    eventId: string,
     imageName: string,
-    selectionId: string,
-    username: string
+    selected: boolean
   ): Promise<void>;
+
+  getDownloadRef(
+    username: string,
+    eventId: string,
+    imageName: string
+  ): Promise<SelectionItemDownloadRef | null>;
 }
+
+const mapItem = (item: Record<string, any>): SelectionItem => ({
+  imageName: item.imageName,
+  eventId: item.eventId,
+  eventTitle: item.eventTitle,
+  selectionId: item.selectionId,
+  username: item.username,
+  url: item.cloudFrontUrl,
+  imageWidth: item.imageWidth,
+  imageHeight: item.imageHeight,
+  selected: !!item.selected,
+});
 
 class SelectionItemRepositoryImpl implements SelectionItemRepository {
   private readonly docClient;
-  private readonly tableName = "SelectionItem";
 
   constructor() {
     this.docClient = getDynamoClient();
   }
 
-  async submitSelection(
+  async getItemsByEventId(
+    username: string,
+    eventId: string
+  ): Promise<SelectionItem[]> {
+    try {
+      const all: SelectionItem[] = [];
+      let lastEvaluatedKey: Record<string, any> | undefined;
+
+      do {
+        const command = new QueryCommand({
+          TableName: TABLE_NAME,
+          KeyConditionExpression: "PK = :pk AND begins_with(SK, :prefix)",
+          ExpressionAttributeValues: {
+            ":pk": userPk(username),
+            ":prefix": selectionItemSkPrefix(eventId),
+          },
+          ExclusiveStartKey: lastEvaluatedKey,
+        });
+
+        const response = await this.docClient.send(command);
+        const items = (response.Items ?? []).map(mapItem);
+        all.push(...items);
+        lastEvaluatedKey = response.LastEvaluatedKey;
+      } while (lastEvaluatedKey);
+
+      all.sort((a, b) => a.imageName.localeCompare(b.imageName));
+      return all;
+    } catch (error) {
+      console.error("Error fetching selection items:", error);
+      throw error;
+    }
+  }
+
+  async setSelected(
+    username: string,
+    eventId: string,
     imageName: string,
-    selectionId: string,
-    username: string
+    selected: boolean
   ): Promise<void> {
     try {
       const command = new UpdateCommand({
-        TableName: this.tableName,
+        TableName: TABLE_NAME,
         Key: {
-          imageName,
-          selectionId,
+          PK: userPk(username),
+          SK: selectionItemSk(eventId, imageName),
         },
-        UpdateExpression: `
-          SET selected = :selected
-        `,
-        ConditionExpression: "username = :username",
-        ExpressionAttributeValues: {
-          ":selected": true,
-          ":username": username,
-        },
+        UpdateExpression: "SET selected = :s",
+        ConditionExpression: "attribute_exists(PK)",
+        ExpressionAttributeValues: { ":s": selected },
       });
-
       await this.docClient.send(command);
     } catch (error) {
       if (
@@ -52,7 +109,7 @@ class SelectionItemRepositoryImpl implements SelectionItemRepository {
         error.name === "ConditionalCheckFailedException"
       ) {
         throw new Error(
-          `Selection item not found or username mismatch for imageName=${imageName}, selectionId=${selectionId}`
+          `Selection item not found for username=${username}, eventId=${eventId}, imageName=${imageName}`
         );
       }
       console.error("Error updating selection item:", error);
@@ -60,44 +117,27 @@ class SelectionItemRepositoryImpl implements SelectionItemRepository {
     }
   }
 
-  async getItemsBySelectionIdAndUsername(
-    selectionId: string,
-    username: string
-  ): Promise<SelectionItem[]> {
+  async getDownloadRef(
+    username: string,
+    eventId: string,
+    imageName: string
+  ): Promise<SelectionItemDownloadRef | null> {
     try {
-      const allItems: SelectionItem[] = [];
-      let lastEvaluatedKey: Record<string, any> | undefined;
-
-      do {
-        const command = new ScanCommand({
-          TableName: this.tableName,
-          FilterExpression:
-            "selectionId = :selectionId AND username = :username",
-          ExpressionAttributeValues: {
-            ":selectionId": selectionId,
-            ":username": username,
+      const response = await this.docClient.send(
+        new GetCommand({
+          TableName: TABLE_NAME,
+          Key: {
+            PK: userPk(username),
+            SK: selectionItemSk(eventId, imageName),
           },
-          ExclusiveStartKey: lastEvaluatedKey,
-        });
-
-        const response = await this.docClient.send(command);
-        const items = (response.Items as SelectionItem[]) ?? [];
-
-        allItems.push(...items);
-        lastEvaluatedKey = response.LastEvaluatedKey;
-
-        console.log(
-          `Fetched ${items.length} items, total so far: ${allItems.length}`
-        );
-      } while (lastEvaluatedKey);
-
-      // Sort all items once after collecting them all
-      allItems.sort((a, b) => a.imageName.localeCompare(b.imageName));
-
-      console.log(`Total items retrieved: ${allItems.length}`);
-      return allItems;
+          ProjectionExpression: "objectKey, imageName",
+        })
+      );
+      const item = response.Item;
+      if (!item?.objectKey || !item?.imageName) return null;
+      return { objectKey: item.objectKey, imageName: item.imageName };
     } catch (error) {
-      console.error("Error fetching selection items:", error);
+      console.error("Error fetching selection item download ref:", error);
       throw error;
     }
   }

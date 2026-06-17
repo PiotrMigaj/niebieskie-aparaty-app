@@ -1,103 +1,113 @@
-import { GetCommand, ScanCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
-import type { FileDto, FileWithObjectKeyDto } from "../../shared/types/file.types";
+import { GetCommand, QueryCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import type {
+  FileDto,
+  FileWithObjectKeyDto,
+} from "../../shared/types/file.types";
 import { getDynamoClient } from "../config/db";
+import { TABLE_NAME, fileSk, fileSkPrefix, userPk } from "../utils/keys";
 
 export interface FileRepository {
-  getFilesForUsernameAndEventId(
+  getFilesByEventId(username: string, eventId: string): Promise<FileDto[]>;
+
+  getFile(
     username: string,
-    eventId: string
-  ): Promise<FileDto[]>;
+    eventId: string,
+    fileId: string
+  ): Promise<FileWithObjectKeyDto | null>;
 
-  getFileByFileId(fileId: string): Promise<FileWithObjectKeyDto | null>;
-
-  updateDownloadDate(fileId: string): Promise<void>;
+  updateDownloadDate(
+    username: string,
+    eventId: string,
+    fileId: string
+  ): Promise<void>;
 }
 
 class FileRepositoryImpl implements FileRepository {
   private readonly docClient;
-  private readonly tableName: string = "Files";
 
   constructor() {
     this.docClient = getDynamoClient();
   }
 
-  async updateDownloadDate(fileId: string): Promise<void> {
-    try {
-      const command = new UpdateCommand({
-        TableName: this.tableName,
-        Key: { fileId },
-        UpdateExpression: "SET dateOfLastDownload = :now",
-        ExpressionAttributeValues: {
-          ":now": new Date().toISOString(),
-        },
-      });
-      await this.docClient.send(command);
-      console.log(`Updated dateOfLastDownload for fileId: ${fileId}`);
-    } catch (error) {
-      console.error("Error updating dateOfLastDownload:", error);
-      throw error;
-    }
-  }
-
-  async getFilesForUsernameAndEventId(
+  async getFilesByEventId(
     username: string,
     eventId: string
   ): Promise<FileDto[]> {
     try {
-      const command = new ScanCommand({
-        TableName: this.tableName,
-        FilterExpression: "username = :username and eventId = :eventId",
+      const command = new QueryCommand({
+        TableName: TABLE_NAME,
+        KeyConditionExpression: "PK = :pk AND begins_with(SK, :prefix)",
         ExpressionAttributeValues: {
-          ":username": username,
-          ":eventId": eventId,
+          ":pk": userPk(username),
+          ":prefix": fileSkPrefix(eventId),
         },
       });
 
       const { Items } = await this.docClient.send(command);
 
       if (!Items || Items.length === 0) {
-        console.log(
-          "No files found for user:",
-          username,
-          "and eventId:",
-          eventId
-        );
         return [];
       }
 
       return Items.map((item) => ({
         fileId: item.fileId,
-        createdAt: item.createdAt.toString(),
-        dateOfLastDownload: item.dateOfLastDownload,
+        eventId: item.eventId ?? eventId,
+        createdAt: String(item.createdAt),
+        dateOfLastDownload: item.dateOfLastDownload ?? null,
         description: item.description,
-      })) as FileDto[];
+      }));
     } catch (error) {
       console.error("Error fetching files:", error);
       return [];
     }
   }
 
-  async getFileByFileId(fileId: string): Promise<FileWithObjectKeyDto | null> {
+  async getFile(
+    username: string,
+    eventId: string,
+    fileId: string
+  ): Promise<FileWithObjectKeyDto | null> {
     try {
       const command = new GetCommand({
-        TableName: this.tableName,
-        Key: { fileId },
+        TableName: TABLE_NAME,
+        Key: { PK: userPk(username), SK: fileSk(eventId, fileId) },
       });
 
       const { Item } = await this.docClient.send(command);
-
       if (!Item) {
-        console.log("No file found for fileId:", fileId);
         return null;
       }
 
       return {
         fileId: Item.fileId,
+        eventId: Item.eventId ?? eventId,
         objectKey: Item.objectKey,
-      } as FileWithObjectKeyDto;
+      };
     } catch (error) {
       console.error("Error fetching file:", error);
       return null;
+    }
+  }
+
+  async updateDownloadDate(
+    username: string,
+    eventId: string,
+    fileId: string
+  ): Promise<void> {
+    try {
+      const command = new UpdateCommand({
+        TableName: TABLE_NAME,
+        Key: { PK: userPk(username), SK: fileSk(eventId, fileId) },
+        UpdateExpression: "SET dateOfLastDownload = :now",
+        ConditionExpression: "attribute_exists(PK)",
+        ExpressionAttributeValues: {
+          ":now": new Date().toISOString(),
+        },
+      });
+      await this.docClient.send(command);
+    } catch (error) {
+      console.error("Error updating dateOfLastDownload:", error);
+      throw error;
     }
   }
 }

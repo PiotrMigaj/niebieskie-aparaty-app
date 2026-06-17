@@ -10,12 +10,7 @@
         </div>
         <!-- Overlay buttons on image for mobile -->
         <div class="md:hidden absolute bottom-3 right-3 flex flex-col gap-2 z-10">
-          <NuxtLink v-if="event.galleryId" :to="`/gallery/${event.galleryId}`"
-            class="flex items-center gap-2 text-sm px-4 py-2 bg-white bg-opacity-90 rounded-lg text-gray-800 hover:bg-opacity-100 transition duration-200 shadow-md font-medium">
-            <UIcon name="i-heroicons-photo" class="text-gray-700" />
-            Galeria
-          </NuxtLink>
-          <NuxtLink v-else-if="event.camelGallery" :to="`/events/${event.eventId}/gallery`"
+          <NuxtLink v-if="event.galleryAvailable" :to="`/events/${event.eventId}/gallery`"
             class="flex items-center gap-2 text-sm px-4 py-2 bg-white bg-opacity-90 rounded-lg text-gray-800 hover:bg-opacity-100 transition duration-200 shadow-md font-medium">
             <UIcon name="i-heroicons-photo" class="text-gray-700" />
             Galeria
@@ -33,12 +28,7 @@
         <div class="flex items-center justify-between flex-wrap gap-2">
           <h2 class="text-xl font-semibold">{{ event.title }}</h2>
           <div class="hidden md:flex gap-2">
-            <NuxtLink v-if="event.galleryId" :to="`/gallery/${event.galleryId}`"
-              class="items-center gap-2 text-sm px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-200 transition duration-200 shadow-sm font-medium flex">
-              <UIcon name="i-heroicons-photo" class="text-gray-600" />
-              Przejdź do galerii
-            </NuxtLink>
-            <NuxtLink v-else-if="event.camelGallery" :to="`/events/${event.eventId}/gallery`"
+            <NuxtLink v-if="event.galleryAvailable" :to="`/events/${event.eventId}/gallery`"
               class="items-center gap-2 text-sm px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-200 transition duration-200 shadow-sm font-medium flex">
               <UIcon name="i-heroicons-photo" class="text-gray-600" />
               Przejdź do galerii
@@ -64,13 +54,7 @@
 
     <!-- Gallery and selection buttons - full width on mobile when no image -->
     <div v-if="!imageUrl" class="md:hidden mt-3 flex gap-2">
-      <NuxtLink v-if="event.galleryId"
-        :to="`/gallery/${event.galleryId}`"
-        class="flex-1 flex items-center justify-center gap-2 text-sm px-4 py-3 bg-gray-100 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-200 transition duration-200 shadow-sm font-medium">
-        <UIcon name="i-heroicons-photo" class="text-gray-600" />
-        Przejdź do galerii
-      </NuxtLink>
-      <NuxtLink v-else-if="event"
+      <NuxtLink v-if="event.galleryAvailable"
         :to="`/events/${event.eventId}/gallery`"
         class="flex-1 flex items-center justify-center gap-2 text-sm px-4 py-3 bg-gray-100 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-200 transition duration-200 shadow-sm font-medium">
         <UIcon name="i-heroicons-photo" class="text-gray-600" />

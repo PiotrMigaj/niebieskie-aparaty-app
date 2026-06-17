@@ -6,7 +6,7 @@
           <!-- Image name badge -->
           <div class="absolute top-3 left-3 z-20">
             <span class="bg-white/90 text-xs text-gray-800 px-2 py-1 rounded shadow font-mono select-all">
-              {{ item.imageName }}
+              {{ item.displayName }}
             </span>
           </div>
           <div class="overflow-hidden shadow-md flex justify-center"
@@ -15,15 +15,13 @@
             <div class="relative w-full h-full">
               <div v-if="!loadedImages[item.imageName]" class="absolute inset-0 bg-gray-300 animate-pulse z-0"></div>
               <NuxtImg
-                :src="item.presignedUrl"
-                :alt="item.imageName"
+                :src="item.url"
+                :alt="item.displayName"
                 class="w-full h-auto object-cover z-10 transition-opacity duration-500"
                 :class="{ 'opacity-0': !loadedImages[item.imageName], 'opacity-100': loadedImages[item.imageName] }"
                 @load="$emit('image-loaded', item.imageName)"
                 :width="item.imageWidth"
                 :height="item.imageHeight"
-                format="webp"
-                :placeholder="true"
                 loading="lazy"
               />
               <!-- Selection icon bottom left -->
@@ -50,7 +48,7 @@
             </div>
           </div>
           <!-- Download button overlay -->
-          <button @click.stop="$emit('download-image', item.presignedUrl)"
+          <button @click.stop="$emit('download-image', item.eventId, item.imageName)"
             class="absolute top-4 right-4 bg-white/90 hover:bg-white w-10 h-10 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center">
             <UIcon v-if="!isDownloading" name="i-heroicons-arrow-down-tray" class="w-5 h-5 text-gray-700" />
             <UIcon v-else name="i-heroicons-arrow-path" class="w-5 h-5 text-gray-700 animate-spin" />
@@ -66,7 +64,7 @@
         <!-- Image name badge absolutely above the image, left-aligned with image -->
         <div v-if="items[selectedImageIndex]" class="absolute" :style="{ left: '0', top: '-2.2rem' }">
           <span class="bg-white/90 text-xs text-gray-800 px-3 py-1 rounded shadow font-mono select-all">
-            {{ items[selectedImageIndex]?.imageName }}
+            {{ items[selectedImageIndex]?.displayName }}
           </span>
         </div>
         <!-- Close button -->
@@ -96,7 +94,7 @@
                     class="w-5 h-5 text-gray-700"
                 />
             </button>
-            <button @click="$emit('download-image', items[selectedImageIndex]?.presignedUrl)"
+            <button @click="items[selectedImageIndex] && $emit('download-image', items[selectedImageIndex]!.eventId, items[selectedImageIndex]!.imageName)"
                 class="bg-white/90 hover:bg-white w-10 h-10 rounded-full shadow-lg transition-all duration-200 flex items-center justify-center">
                 <UIcon v-if="!isDownloading" name="i-heroicons-arrow-down-tray" class="w-5 h-5 text-gray-700" />
                 <UIcon v-else name="i-heroicons-arrow-path" class="w-5 h-5 text-gray-700 animate-spin" />
@@ -109,8 +107,8 @@
             <span class="text-4xl">←</span>
           </button>
           <div class="relative flex justify-center">
-            <img v-if="items[selectedImageIndex]" :src="items[selectedImageIndex]?.presignedUrl"
-              :alt="items[selectedImageIndex]?.imageName" class="max-w-full max-h-[70vh] md:max-h-[85vh] object-contain" />
+            <img v-if="items[selectedImageIndex]" :src="items[selectedImageIndex]?.url"
+              :alt="items[selectedImageIndex]?.displayName" class="max-w-full max-h-[70vh] md:max-h-[85vh] object-contain" />
           </div>
           <button v-if="selectedImageIndex < items.length - 1"
             class="hidden md:block md:ml-4 text-white hover:text-gray-300 transition-colors"
@@ -135,11 +133,11 @@
 </template>
 
 <script setup lang="ts">
-import type { SelectionItem } from '~~/shared/types/selection.types';
+import type { SelectionItemView } from '~~/app/composables/useSelection';
 
 const props = defineProps<{
   title: string,
-  items: SelectionItem[],
+  items: SelectionItemView[],
   selectedImageIndex: number | null,
   isDownloading: boolean,
   isSelected: (imageName: string) => boolean,

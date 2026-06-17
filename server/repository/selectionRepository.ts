@@ -1,148 +1,125 @@
-import { ScanCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import { GetCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import type { Selection } from "../../shared/types/selection.types";
 import { getDynamoClient } from "../config/db";
+import { TABLE_NAME, selectionSk, userPk } from "../utils/keys";
 
 export interface SelectionRepository {
-  getSelectionByEventIdAndUsername(
-    eventId: string,
-    username: string
+  getSelectionByEventId(
+    username: string,
+    eventId: string
   ): Promise<Selection | null>;
 
-  submitSelection(
-    selectionId: string,
+  updateBlocked(
     username: string,
-    selectedImages: string[]
+    eventId: string,
+    blocked: boolean
   ): Promise<void>;
 
-  saveSelection(
-    selectionId: string,
+  updateSelectedImages(
     username: string,
+    eventId: string,
     selectedImages: string[]
   ): Promise<void>;
 }
 
+const mapSelection = (item: Record<string, any>): Selection => ({
+  selectionId: item.selectionId,
+  eventId: item.eventId,
+  eventTitle: item.eventTitle,
+  username: item.username,
+  blocked: !!item.blocked,
+  maxNumberOfPhotos: item.maxNumberOfPhotos,
+  selectedNumberOfPhotos: item.selectedNumberOfPhotos ?? 0,
+  selectedImages: Array.isArray(item.selectedImages) ? item.selectedImages : [],
+  createdAt: item.createdAt,
+  updatedAt: item.updatedAt ?? null,
+});
+
 class SelectionRepositoryImpl implements SelectionRepository {
   private readonly docClient;
-  private readonly tableName = "Selection";
 
   constructor() {
     this.docClient = getDynamoClient();
   }
-  async submitSelection(
-    selectionId: string,
+
+  async getSelectionByEventId(
     username: string,
-    selectedImages: string[]
-  ): Promise<void> {
-    try {
-      const selectedNumberOfPhotos = selectedImages.length;
-      const updatedAt = new Date().toISOString();
-
-      const command = new UpdateCommand({
-        TableName: this.tableName,
-        Key: {
-          selectionId,
-        },
-        // Set the fields you want to update:
-        UpdateExpression: `
-          SET 
-            blocked = :blocked, 
-            selectedImages = :selectedImages, 
-            selectedNumberOfPhotos = :selectedNumberOfPhotos, 
-            updatedAt = :updatedAt
-        `,
-        // Condition ensures the username matches:
-        ConditionExpression: "username = :username",
-        ExpressionAttributeValues: {
-          ":blocked": true,
-          ":selectedImages": selectedImages,
-          ":selectedNumberOfPhotos": selectedNumberOfPhotos,
-          ":updatedAt": updatedAt,
-          ":username": username,
-        },
-      });
-
-      await this.docClient.send(command);
-    } catch (error) {
-      if (
-        error instanceof Error &&
-        error.name === "ConditionalCheckFailedException"
-      ) {
-        throw new Error(
-          `Selection not found for given selectionId and username`
-        );
-      }
-      console.error("Error updating selection:", error);
-      throw error;
-    }
-  }
-
-  async saveSelection(
-    selectionId: string,
-    username: string,
-    selectedImages: string[]
-  ): Promise<void> {
-    try {
-      const selectedNumberOfPhotos = selectedImages.length;
-      const updatedAt = new Date().toISOString();
-
-      const command = new UpdateCommand({
-        TableName: this.tableName,
-        Key: {
-          selectionId,
-        },
-        // Set the fields you want to update (without blocking):
-        UpdateExpression: `
-          SET 
-            selectedImages = :selectedImages, 
-            selectedNumberOfPhotos = :selectedNumberOfPhotos, 
-            updatedAt = :updatedAt
-        `,
-        // Condition ensures the username matches:
-        ConditionExpression: "username = :username",
-        ExpressionAttributeValues: {
-          ":selectedImages": selectedImages,
-          ":selectedNumberOfPhotos": selectedNumberOfPhotos,
-          ":updatedAt": updatedAt,
-          ":username": username,
-        },
-      });
-
-      await this.docClient.send(command);
-    } catch (error) {
-      if (
-        error instanceof Error &&
-        error.name === "ConditionalCheckFailedException"
-      ) {
-        throw new Error(
-          `Selection not found for given selectionId and username`
-        );
-      }
-      console.error("Error saving selection:", error);
-      throw error;
-    }
-  }
-
-  async getSelectionByEventIdAndUsername(
-    eventId: string,
-    username: string
+    eventId: string
   ): Promise<Selection | null> {
     try {
-      const command = new ScanCommand({
-        TableName: this.tableName,
-        FilterExpression: "eventId = :eventId AND username = :username",
-        ExpressionAttributeValues: {
-          ":eventId": eventId,
-          ":username": username,
-        },
+      const command = new GetCommand({
+        TableName: TABLE_NAME,
+        Key: { PK: userPk(username), SK: selectionSk(eventId) },
       });
 
-      const { Items } = await this.docClient.send(command);
-      if (Items && Items.length > 0) {
-        return Items[0] as Selection;
-      }
-      return null;
+      const { Item } = await this.docClient.send(command);
+      return Item ? mapSelection(Item) : null;
     } catch (error) {
       console.error("Error fetching selection:", error);
+      throw error;
+    }
+  }
+
+  async updateBlocked(
+    username: string,
+    eventId: string,
+    blocked: boolean
+  ): Promise<void> {
+    try {
+      const command = new UpdateCommand({
+        TableName: TABLE_NAME,
+        Key: { PK: userPk(username), SK: selectionSk(eventId) },
+        UpdateExpression: "SET blocked = :b, updatedAt = :u",
+        ConditionExpression: "attribute_exists(PK)",
+        ExpressionAttributeValues: {
+          ":b": blocked,
+          ":u": new Date().toISOString(),
+        },
+      });
+      await this.docClient.send(command);
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.name === "ConditionalCheckFailedException"
+      ) {
+        throw new Error(
+          `Selection not found for username=${username}, eventId=${eventId}`
+        );
+      }
+      console.error("Error updating selection blocked flag:", error);
+      throw error;
+    }
+  }
+
+  async updateSelectedImages(
+    username: string,
+    eventId: string,
+    selectedImages: string[]
+  ): Promise<void> {
+    try {
+      const command = new UpdateCommand({
+        TableName: TABLE_NAME,
+        Key: { PK: userPk(username), SK: selectionSk(eventId) },
+        UpdateExpression:
+          "SET selectedImages = :s, selectedNumberOfPhotos = :n, updatedAt = :u",
+        ConditionExpression: "attribute_exists(PK)",
+        ExpressionAttributeValues: {
+          ":s": selectedImages,
+          ":n": selectedImages.length,
+          ":u": new Date().toISOString(),
+        },
+      });
+      await this.docClient.send(command);
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.name === "ConditionalCheckFailedException"
+      ) {
+        throw new Error(
+          `Selection not found for username=${username}, eventId=${eventId}`
+        );
+      }
+      console.error("Error updating selection selectedImages:", error);
       throw error;
     }
   }

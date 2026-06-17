@@ -1,43 +1,34 @@
-import type { Selection, SelectionItem, SelectionSubmitPayload, SelectionSavePayload } from "~~/shared/types/selection.types";
+import type {
+  Selection,
+  SelectionItem,
+  SelectionSavePayload,
+  SelectionSubmitPayload,
+} from "~~/shared/types/selection.types";
+import { toDisplayName } from "~~/shared/utils/imageName";
+import { triggerDownload } from "~~/app/utils/downloadFromUrl";
+
+export interface SelectionItemView extends SelectionItem {
+  displayName: string;
+}
 
 export default function useSelection() {
   const toast = useToast();
 
   const selection = ref<Selection | null>(null);
-  const selectedItems = ref<SelectionItem[]>([]);
+  const selectedItems = ref<SelectionItemView[]>([]);
 
-  // State management
   const selectedImages = useState<string[]>("selectedImages", () => []);
 
-  const selectedImagesSorted = computed(() => {
-    return [...selectedImages.value].sort((a, b) => a.localeCompare(b));
-  });
-
-  // Cookie persistence
-  const selectedImagesCookie = useCookie<string[]>("selectedImages", {
-    default: () => [],
-  });
-
-  // Initialize state from cookie
-  if (import.meta.client && selectedImagesCookie.value.length > 0) {
-    selectedImages.value = selectedImagesCookie.value;
-  }
-
-  // Watchers to sync state with cookie
-  watch(
-    selectedImages,
-    (newValue) => {
-      selectedImagesCookie.value = newValue;
-    },
-    { deep: true }
+  const selectedImagesSorted = computed(() =>
+    [...selectedImages.value]
+      .map(toDisplayName)
+      .sort((a, b) => a.localeCompare(b))
   );
 
-  // Modal and download state
   const selectedImageIndex = ref<number | null>(null);
   const isDownloading = ref(false);
   const loadedImages = ref<Record<string, boolean>>({});
 
-  // Submission state
   const isSubmitting = ref(false);
   const isSaving = ref(false);
 
@@ -52,17 +43,11 @@ export default function useSelection() {
     loadedImages.value[imageName] = true;
   }
 
-  async function downloadImage(url: string | undefined) {
-    if (!url) return;
-
-    isDownloading.value = true;
+  function downloadImage(eventId: string, imageName: string) {
     try {
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = ""; // Let browser use default filename from the URL or headers
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      triggerDownload(
+        `/api/selections/${encodeURIComponent(eventId)}/items/${encodeURIComponent(imageName)}/download`
+      );
     } catch (error) {
       console.error("Error downloading image:", error);
       if (!toast.toasts.value.some((t) => t.id === "image-download-toast-id")) {
@@ -75,34 +60,23 @@ export default function useSelection() {
           duration: 5000,
         });
       }
-    } finally {
-      isDownloading.value = false;
     }
   }
 
-  const filteredSelectedItems = computed(() => {
-    return selectedItems.value
+  const filteredSelectedItems = computed(() =>
+    selectedItems.value
       .filter((item) => selectedImages.value.includes(item.imageName))
       .map((item) => ({
         ...item,
-        selected: selectedImages.value.includes(item.imageName),
-      }));
-  });
-
-  function restoreSelectedImagesFromSelection(selection: Selection) {
-    if (!selection.blocked && selection.selectedImages) {
-      selectedImages.value = [...selection.selectedImages];
-    }
-  }
+        selected: true,
+      }))
+  );
 
   async function fetchSelection(eventId: string) {
     try {
-      const fetchedSelection = await $fetch<Selection>(
-        `/api/selections/${eventId}`
-      );
-      selection.value = fetchedSelection;
+      selection.value = await $fetch<Selection>(`/api/selections/${eventId}`);
     } catch (error) {
-      console.error("Error fetching selection and selection items:", error);
+      console.error("Error fetching selection:", error);
     }
   }
 
@@ -113,14 +87,15 @@ export default function useSelection() {
         `/api/selections/${eventId}`
       );
       selection.value = fetchedSelection;
-      const selectionId = fetchedSelection.selectionId;
-      const fetchedSelectionItems = await $fetch<SelectionItem[]>(
-        `/api/selections/${selectionId}/items`
+      const items = await $fetch<SelectionItem[]>(
+        `/api/selections/${eventId}/items`
       );
-      selectedItems.value = fetchedSelectionItems;
-      loadedImages.value = {}; // Reset loading state on new fetch
-      
-      restoreSelectedImagesFromSelection(fetchedSelection);
+      selectedItems.value = items.map((item) => ({
+        ...item,
+        displayName: toDisplayName(item.imageName),
+      }));
+      loadedImages.value = {};
+      selectedImages.value = fetchedSelection.selectedImages ?? [];
     } catch (error) {
       console.error("Error fetching selection and selection items:", error);
     }
@@ -175,19 +150,16 @@ export default function useSelection() {
     }
   }
 
-  // Submission functions
   function shouldShowConfirmationModal() {
     if (!selection.value) return false;
-    const picked = selectedImages.value.length;
-    const limit = selection.value.maxNumberOfPhotos;
-    return picked < limit;
+    return selectedImages.value.length < selection.value.maxNumberOfPhotos;
   }
 
   function getConfirmationModalProps() {
     if (!selection.value) return null;
     return {
       selectedCount: selectedImages.value.length,
-      packageLimit: selection.value.maxNumberOfPhotos
+      packageLimit: selection.value.maxNumberOfPhotos,
     };
   }
 
@@ -201,25 +173,25 @@ export default function useSelection() {
       eventTitle: selection.value.eventTitle,
       selectedImages: selectedImages.value,
     };
-    
+
     try {
-      await $fetch('/api/selections/submitSelection', {
+      await $fetch("/api/selections/submitSelection", {
         method: "POST" as any,
         body: payload,
       });
       await fetchSelection(selection.value.eventId);
       toast.add({
-        title: 'Wybór przesłany',
-        description: 'Twój wybór został przesłany do fotografa.',
-        color: 'success',
-        icon: 'i-heroicons-check-circle',
+        title: "Wybór przesłany",
+        description: "Twój wybór został przesłany do fotografa.",
+        color: "success",
+        icon: "i-heroicons-check-circle",
       });
     } catch (e) {
       toast.add({
-        title: 'Błąd',
-        description: 'Nie udało się przesłać wyboru.',
-        color: 'error',
-        icon: 'i-heroicons-x-circle',
+        title: "Błąd",
+        description: "Nie udało się przesłać wyboru.",
+        color: "error",
+        icon: "i-heroicons-x-circle",
       });
     } finally {
       isSubmitting.value = false;
@@ -228,7 +200,7 @@ export default function useSelection() {
 
   async function handleSaveSelection() {
     if (!selection.value) return;
-    
+
     isSaving.value = true;
     const payload: SelectionSavePayload = {
       selectionId: selection.value.selectionId,
@@ -236,24 +208,24 @@ export default function useSelection() {
       eventTitle: selection.value.eventTitle,
       selectedImages: selectedImages.value,
     };
-    
+
     try {
-      await $fetch('/api/selections/saveSelection', {
+      await $fetch("/api/selections/saveSelection", {
         method: "POST" as any,
         body: payload,
       });
       toast.add({
-        title: 'Wybór zapisany',
-        description: 'Twój wybór został zapisany.',
-        color: 'success',
-        icon: 'i-heroicons-check-circle',
+        title: "Wybór zapisany",
+        description: "Twój wybór został zapisany.",
+        color: "success",
+        icon: "i-heroicons-check-circle",
       });
     } catch (e) {
       toast.add({
-        title: 'Błąd',
-        description: 'Nie udało się zapisać wyboru.',
-        color: 'error',
-        icon: 'i-heroicons-x-circle',
+        title: "Błąd",
+        description: "Nie udało się zapisać wyboru.",
+        color: "error",
+        icon: "i-heroicons-x-circle",
       });
     } finally {
       isSaving.value = false;
@@ -269,24 +241,20 @@ export default function useSelection() {
     toggleSelection,
     isSelected,
     selectAll,
-    // modal and download
     selectedImageIndex,
     isDownloading,
     openImage,
     closeImage,
     downloadImage,
-    // image loading state
     loadedImages,
     setImageLoaded,
     handleKeydown,
-    // submission functions and state
     isSubmitting,
     isSaving,
     shouldShowConfirmationModal,
     getConfirmationModalProps,
     submitSelection,
     handleSaveSelection,
-    // data
     selection,
     selectedImages,
     selectedImagesSorted,

@@ -1,53 +1,47 @@
-import { EventGalleryRepository, EventGalleryRepositoryFactory } from "~~/server/repository/eventGalleryRepository";
+import { GalleryItemRepositoryFactory } from "~~/server/repository/galleryItemRepository";
 import { isUserAuthenticated } from "~~/server/service/authService";
 import type { AuthUser } from "~~/shared/types/auth.types";
-import type { EventGallery } from "~~/shared/types/eventGallery.types";
+import type { GalleryItem } from "~~/shared/types/gallery.types";
 
 export default defineEventHandler(async (event) => {
-  // Always authenticate first
   const authUser: AuthUser | undefined = await isUserAuthenticated(event);
 
   if (!authUser) {
     console.error("AuthUser from session is undefined during fetching gallery");
-    throw createError({
-      statusCode: 401,
-      message: "Bad credentials",
-    });
+    throw createError({ statusCode: 401, message: "Bad credentials" });
   }
 
   const eventId = event.context.params?.eventId;
 
   if (!eventId) {
-    throw createError({
-      statusCode: 400,
-      message: "Missing eventId in request",
-    });
+    throw createError({ statusCode: 400, message: "Missing eventId in request" });
   }
 
-  // Create cached function for data fetching
-  const getCachedEventGallery = defineCachedFunction(
+  const getCachedGallery = defineCachedFunction(
     async (eventId: string, username: string) => {
-      const repository: EventGalleryRepository = EventGalleryRepositoryFactory.getInstance();
-      return await repository.getImagesByEventIdAndUsername(eventId, username);
+      const repository = GalleryItemRepositoryFactory.getInstance();
+      const items = await repository.getItemsByEventId(username, eventId);
+      return items.filter((i) => i.status === "processed");
     },
     {
-      name: 'event-gallery',
-      maxAge: 60 * 5, // 5 minutes
-      getKey: (eventId: string, username: string) => `event-gallery-${eventId}-${username}`,
-      swr: false, // Disable stale-while-revalidate to prevent serving old data
-      staleMaxAge: 60 * 2, // 2 minutes
+      name: "event-gallery",
+      maxAge: 60 * 5,
+      getKey: (eventId: string, username: string) =>
+        `event-gallery-${eventId}-${username}`,
+      swr: false,
+      staleMaxAge: 60 * 2,
     }
   );
 
-  const gallery: EventGallery[] = await getCachedEventGallery(eventId, authUser.username);
-  
+  const gallery: GalleryItem[] = await getCachedGallery(
+    eventId,
+    authUser.username
+  );
+
   if (gallery.length === 0) {
-    throw createError({
-      statusCode: 404,
-      message: "Event Gallery not found",
-    });
+    throw createError({ statusCode: 404, message: "Event Gallery not found" });
   }
-  
+
   console.log("Fetch event gallery for user:", authUser.username);
   return gallery;
 });

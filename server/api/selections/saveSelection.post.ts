@@ -1,48 +1,51 @@
-import {
-  SelectionRepositoryFactory,
-} from "~~/server/repository/selectionRepository";
+import { SelectionRepositoryFactory } from "~~/server/repository/selectionRepository";
+import { SelectionItemRepositoryFactory } from "~~/server/repository/selectionItemRepository";
 import type { AuthUser } from "../../../shared/types/auth.types";
 import type { SelectionSavePayload } from "~~/shared/types/selection.types";
 import { isUserAuthenticated } from "~~/server/service/authService";
+import { applySelectionDiff } from "~~/server/utils/selectionDiff";
 
 export default defineEventHandler(async (event) => {
   const authUser: AuthUser | undefined = await isUserAuthenticated(event);
 
   if (!authUser) {
-    console.error("AuthUser from session is undefined during fetching gallery");
-    throw createError({
-      statusCode: 401,
-      message: "Bad credentials",
-    });
+    console.error("AuthUser from session is undefined during saving selection");
+    throw createError({ statusCode: 401, message: "Bad credentials" });
   }
 
   const payload = (await readBody(event)) as SelectionSavePayload;
-
   if (!payload) {
-    throw createError({
-      statusCode: 400,
-      message: "Payload is required",
-    });
+    throw createError({ statusCode: 400, message: "Payload is required" });
   }
 
   const selectionRepository = SelectionRepositoryFactory.getInstance();
-  const fetchedSelection =
-    await selectionRepository.getSelectionByEventIdAndUsername(
-      payload.eventId,
-      authUser.username
-    );
+  const selection = await selectionRepository.getSelectionByEventId(
+    authUser.username,
+    payload.eventId
+  );
 
-  if (!fetchedSelection || fetchedSelection.blocked) {
+  if (!selection || selection.blocked) {
     throw createError({
       statusCode: 400,
-      message: "There is no selection in DB or is blocked",
+      message: "There is no selection in DB or it is blocked",
     });
   }
 
   try {
-    await selectionRepository.saveSelection(
-      payload.selectionId,
+    const selectionItemRepository = SelectionItemRepositoryFactory.getInstance();
+    const currentItems = await selectionItemRepository.getItemsByEventId(
       authUser.username,
+      payload.eventId
+    );
+    await applySelectionDiff(
+      authUser.username,
+      payload.eventId,
+      currentItems,
+      payload.selectedImages
+    );
+    await selectionRepository.updateSelectedImages(
+      authUser.username,
+      payload.eventId,
       payload.selectedImages
     );
     return { success: true, message: "Selection saved successfully" };
@@ -54,4 +57,3 @@ export default defineEventHandler(async (event) => {
     });
   }
 });
-

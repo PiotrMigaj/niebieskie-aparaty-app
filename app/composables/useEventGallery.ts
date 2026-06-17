@@ -1,13 +1,14 @@
-import type { EventGallery } from "../../shared/types/eventGallery.types";
+import type { GalleryItem } from "../../shared/types/gallery.types";
+import { toDisplayName } from "../../shared/utils/imageName";
+import { triggerDownload } from "../utils/downloadFromUrl";
 
-interface EventGalleryImageWithThumbnail extends EventGallery {
-  itemImageSrc: string;
-  thumbnailImageSrc: string;
+export interface GalleryItemView extends GalleryItem {
+  displayName: string;
   alt: string;
 }
 
 export const useEventGallery = () => {
-  const images = ref<EventGalleryImageWithThumbnail[]>([]);
+  const images = ref<GalleryItemView[]>([]);
   const loadedImages = ref<boolean[]>([]);
   const selectedImage = ref<number | null>(null);
   const isDownloading = ref(false);
@@ -17,14 +18,13 @@ export const useEventGallery = () => {
   const fetchGallery = async (eventId: string) => {
     try {
       loading.value = true;
-      const galleryData = await $fetch<EventGallery[]>(
+      const items = await $fetch<GalleryItem[]>(
         `/api/events/${eventId}/gallery`
       );
 
-      images.value = galleryData.map((img: EventGallery, index: number) => ({
+      images.value = items.map((img, index) => ({
         ...img,
-        itemImageSrc: img.compressedFilePresignedUrl || "",
-        thumbnailImageSrc: img.compressedFilePresignedUrl || "",
+        displayName: toDisplayName(img.imageName),
         alt: `Image ${index + 1}`,
       }));
 
@@ -36,17 +36,11 @@ export const useEventGallery = () => {
     }
   };
 
-  const downloadImage = async (url: string | undefined) => {
-    if (!url) return;
-
-    isDownloading.value = true;
+  const downloadImage = (eventId: string, imageName: string) => {
     try {
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = ""; // Let browser use default filename from the URL or headers
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      triggerDownload(
+        `/api/events/${encodeURIComponent(eventId)}/gallery/${encodeURIComponent(imageName)}/download`
+      );
     } catch (error) {
       console.error("Error downloading image:", error);
       if (!toast.toasts.value.some((t) => t.id === "image-download-toast-id")) {
@@ -59,11 +53,8 @@ export const useEventGallery = () => {
           duration: 5000,
         });
       }
-    } finally {
-      isDownloading.value = false;
     }
   };
-  
 
   const openImage = (index: number) => {
     selectedImage.value = index;

@@ -1,13 +1,14 @@
 import { isUserAuthenticated } from "../service/authService";
+import { generatePresignedUrlForObjectKey } from "../utils/generatePresignedUrl";
 
 export default defineEventHandler(async (event) => {
   await isUserAuthenticated(event);
-  const { objectKey, fileId } = await readBody(event);
+  const { objectKey } = await readBody(event);
+  if (!objectKey) {
+    throw createError({ statusCode: 400, message: "Missing objectKey" });
+  }
   try {
-    if (objectKey){
-        return await generatePresignedUrlForObjectKey(objectKey);
-    }
-    return await generatePresignedUrlForFileId(fileId);
+    return await generatePresignedUrlForObjectKey(objectKey);
   } catch (err) {
     throw createError({
       statusCode: 400,
