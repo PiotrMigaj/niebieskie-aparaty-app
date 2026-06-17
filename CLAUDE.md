@@ -103,6 +103,15 @@ This is a Nuxt 3 full-stack photography gallery application called "Niebieskie A
 - `AWS_ACCESS_KEY_ID`: AWS access key
 - `AWS_SECRET_ACCESS_KEY`: AWS secret key
 
+### Docker / Production Image
+- **Build host = Apple Silicon (arm64); deploy host = Ubuntu x86_64 VPS** — `docker-compose.yaml` sets `build.platforms: [linux/amd64]` and `platform: linux/amd64`. Removing them ships an arm64 image that won't run on the VPS. `sharp` + `bcrypt` prebuilt native binaries are platform-specific; build under qemu emulation so `pnpm install` resolves the amd64-musl binaries.
+- **Container port is `4600`, dev port is `3333`** — `pnpm dev` listens on 3333 (see "Development Commands"); the production container exposes 4600 (`NITRO_PORT=4600`). When changing the container port, update **all four** places in lockstep: Dockerfile `EXPOSE` / `ENV NITRO_PORT` / `HEALTHCHECK` URL, and compose `ports` / `environment.NITRO_PORT` / `healthcheck.test`. The Dockerfile `HEALTHCHECK` is baked at build time — compose `environment` does not rewrite it.
+- **pnpm is pinned via `package.json#packageManager`** (currently `pnpm@10.12.1`). Corepack reads it inside Docker via `corepack prepare --activate` — bumping pnpm = edit that one field and rebuild. Don't hardcode a pnpm version in the Dockerfile.
+- **`node:22-alpine` ships a corepack with stale pnpm signing keys** — `corepack prepare` fails with `Cannot find matching keyid`. The Dockerfile fixes this with `npm install -g corepack@latest` before `corepack enable`. Don't remove that line until the base image bundles a newer corepack.
+- **pnpm store is cached via BuildKit cache mount** (`--mount=type=cache,id=pnpm,target=/pnpm/store`). Requires BuildKit (Docker Desktop default). First build is slow under qemu (3–8 min); rebuilds with warm cache are much faster.
+- **Runtime image has no `node_modules`** — Nitro's `.output/` is self-contained, so only `.output` is copied to the runtime stage. Don't add `node_modules` copying back unless you've genuinely outgrown Nitro's bundle.
+- **Runtime is hardened**: `read_only: true` with `tmpfs: /tmp` (sharp + Nitro write tempfiles there — don't write elsewhere in the container), `no-new-privileges`, `cap_drop: ALL`, non-root `appuser`, `tini` as PID 1.
+
 ### Key Patterns
 - Repository pattern for data access
 - Singleton pattern for services (AuthService, repositories)
