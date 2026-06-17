@@ -7,5 +7,10 @@ yarn.lock
 .git
 .gitignore
 .env
+.env.*
 README.md
 .vscode
+.claude
+specs
+*.md
+.DS_Store

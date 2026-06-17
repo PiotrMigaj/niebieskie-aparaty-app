@@ -3,28 +3,33 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: migi987/app-niebieskie-aparaty:15.0
+      platforms:
+        - linux/amd64
+    image: migi987/app-niebieskie-aparaty-v2:1.0
+    platform: linux/amd64
     ports:
-      - "3333:3333"
-    # deploy:
-    #   resources:
-    #     limits:
-    #       cpus: "0.5"
-    #       memory: 512M
+      - "4600:4600"
+    env_file:
+      - .env
     environment:
-      - NUXT_SESSION_PASSWORD=${NUXT_SESSION_PASSWORD}
-      - AWS_REGION=${AWS_REGION}
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      # - NUXT_ADMIN_PASSWORD=${NUXT_ADMIN_PASSWORD}
-      # - NODE_ENV=production
-      - NITRO_PORT=3333
+      NODE_ENV: production
+      NITRO_PORT: "4600"
     restart: unless-stopped
-    command: ["node", ".output/server/index.mjs"]
-    # security_opt:
-    #   - no-new-privileges
-    # - seccomp=default
-    #   - apparmor=docker-default
-    # cap_drop:
-    #   - ALL
-    # read_only: true
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "--spider", "http://127.0.0.1:4600/"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3

@@ -15,14 +15,15 @@
             <div class="relative w-full h-full">
               <div v-if="!loadedImages[item.imageName]" class="absolute inset-0 bg-gray-300 animate-pulse z-0"></div>
               <NuxtImg
+                v-if="shouldLoad(item.imageName)"
                 :src="item.url"
                 :alt="item.displayName"
                 class="w-full h-auto object-cover z-10 transition-opacity duration-500"
                 :class="{ 'opacity-0': !loadedImages[item.imageName], 'opacity-100': loadedImages[item.imageName] }"
-                @load="$emit('image-loaded', item.imageName)"
+                @load="onImageLoaded(item.imageName)"
                 :width="item.imageWidth"
                 :height="item.imageHeight"
-                loading="lazy"
+                :fetchpriority="loadIndex(item.imageName) < 6 ? 'high' : 'auto'"
               />
               <!-- Selection icon bottom left -->
               <button
@@ -144,5 +145,41 @@ const props = defineProps<{
   loadedImages: Record<string, boolean>
 }>()
 
-defineEmits(['open-image', 'close-image', 'download-image', 'toggle-selection', 'image-loaded'])
+const emit = defineEmits(['open-image', 'close-image', 'download-image', 'toggle-selection', 'image-loaded'])
+
+const MAX_CONCURRENT = 4
+
+const loadIndexMap = computed<Record<string, number>>(() => {
+  const map: Record<string, number> = {}
+  props.items.forEach((item, i) => { map[item.imageName] = i })
+  return map
+})
+
+function loadIndex(imageName: string) {
+  return loadIndexMap.value[imageName] ?? Number.MAX_SAFE_INTEGER
+}
+
+const allowedToLoad = computed<Set<string>>(() => {
+  const allowed = new Set<string>()
+  let inFlight = 0
+  for (const item of props.items) {
+    if (props.loadedImages[item.imageName]) {
+      allowed.add(item.imageName)
+    } else if (inFlight < MAX_CONCURRENT) {
+      allowed.add(item.imageName)
+      inFlight++
+    } else {
+      break
+    }
+  }
+  return allowed
+})
+
+function shouldLoad(imageName: string) {
+  return allowedToLoad.value.has(imageName)
+}
+
+function onImageLoaded(imageName: string) {
+  emit('image-loaded', imageName)
+}
 </script>

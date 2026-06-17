@@ -95,6 +95,8 @@ This is a Nuxt 3 full-stack photography gallery application called "Niebieskie A
 - Image lazy loading with placeholder animations
 - Chunked rendering (~200 images per chunk) so only nearby chunks instantiate their `MasonryWall`
 - Masonry layout with responsive columns
+- `DynamicScroller` chunk size and `MasonryWall` are coupled: gallery uses ~200/chunk and works; chunks of ~20 break the masonry layout (columns don't lay out). If you need smaller batches inside masonry, use a concurrency-limited load queue (see `app/components/SelectedItemsWrapper.vue`) instead of virtualization.
+- **Selection page image throttle**: `app/components/SelectedItemsWrapper.vue` gates `<NuxtImg>` rendering via `v-if="shouldLoad(imageName)"` so only ~4 images load at a time (top-down). Derived from `props.loadedImages`, not a local counter — local state would reset when parent's `getItemsForTab()` returns a new sliced array on every selection toggle.
 
 ### Environment Variables Required
 - `AWS_REGION`: AWS region for services
@@ -107,6 +109,7 @@ This is a Nuxt 3 full-stack photography gallery application called "Niebieskie A
 - Composables for reactive state management
 - Type-safe API endpoints with shared TypeScript interfaces
 - Error handling with toast notifications
+- **`loadedImages` is the source of truth for per-image load state** (in `useSelection`/`useEventGallery`, keyed by `imageName`). It persists across tab switches, pagination, and selection toggles. Child components throttling/gating image loads should *derive* from it — never mirror it into local state and `watch(() => props.items)`, because `getItemsForTab()` returns a fresh `.slice()` on every parent rerender (selection toggle → `tabs` computed re-runs → new array reference).
 
 ### Seasonal Marketing Features
 
